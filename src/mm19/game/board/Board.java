@@ -144,23 +144,10 @@ public class Board {
         public void removeShip(){
             currentShip = null;
             occupied = false;
-        }
+        }  
     }
 
-	public boolean setShip(Ship testShip) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public Object getCount() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public boolean removeShip(int i, int j) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 
-}
+
+

@@ -24,32 +24,32 @@ public class BoardTests {
 	public void testGetShip() { //test getting as setting ships
 		Board testBoard= new Board(8,8); 
 		Ship testShip = new MainShip(3, 3, Ship.Orientation.HORIZONTAL);
-		assertTrue(testBoard.setShip(testShip));
-		assertTrue(testBoard.setShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));
+		assertTrue(testBoard.placeShip(testShip));
+		assertTrue(testBoard.placeShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));
 		assertEquals("did I get the correct ship?", testBoard.getShip(3,3), testShip);
 	}
 	@Test
 	public void testSetOnlyVaidShips() { //test getting as setting ships
 		Board testBoard= new Board(8,8); 
 		Ship testShip = new MainShip(4, 5, Ship.Orientation.HORIZONTAL);
-		assertTrue(testBoard.setShip(testShip));
-		assertFalse(testBoard.setShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL))); //this one will fail as the spot is taken
-		assertFalse(testBoard.setShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));// out of bounds 		
+		assertTrue(testBoard.placeShip(testShip));
+		assertFalse(testBoard.placeShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL))); //this one will fail as the spot is taken
+		assertFalse(testBoard.placeShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));// out of bounds 		
 		assertEquals("did I get the correct ship?", testBoard.getShip(4,5), testShip);
 		}
 	@Test
 	public void testShipCount() { //test getting as setting ships
 		Board testBoard= new Board(8,8); 
 		Ship testShip = new MainShip(4, 5, Ship.Orientation.HORIZONTAL);
-		assertTrue(testBoard.setShip(testShip)); //this one will fail as the spot is taken
-		assertFalse(testBoard.setShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));// out of bounds
-		assertTrue(testBoard.setShip(new PilotShip(3,5, Ship.Orientation.HORIZONTAL)));
-		assertTrue(testBoard.setShip(new PilotShip(2,5, Ship.Orientation.HORIZONTAL)));
-		assertTrue(testBoard.setShip(new PilotShip(1,5, Ship.Orientation.HORIZONTAL)));
-		assertTrue(testBoard.setShip(new PilotShip(0,5, Ship.Orientation.HORIZONTAL)));
+		assertTrue(testBoard.placeShip(testShip)); //this one will fail as the spot is taken
+		assertFalse(testBoard.placeShip(new PilotShip(4,5, Ship.Orientation.HORIZONTAL)));// out of bounds
+		assertTrue(testBoard.placeShip(new PilotShip(3,5, Ship.Orientation.HORIZONTAL)));
+		assertTrue(testBoard.placeShip(new PilotShip(2,5, Ship.Orientation.HORIZONTAL)));
+		assertTrue(testBoard.placeShip(new PilotShip(1,5, Ship.Orientation.HORIZONTAL)));
+		assertTrue(testBoard.placeShip(new PilotShip(0,5, Ship.Orientation.HORIZONTAL)));
 		assertTrue(testBoard.removeShip(0,5));
 		assertTrue(testBoard.removeShip(1,5));
-		assertEquals("did I get the correct ship?", testBoard.getCount(), 5);
+		assertEquals("did I get the correct ship?", testBoard.shipCount(), 5);
 		}
 	
 
