@@ -5,6 +5,7 @@ import mm19.game.ships.Ship;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+
 /**
  * 
  * @author mm19
@@ -260,6 +261,7 @@ public class Board {
             occupied = false;
         }  
     }
+}
 
 
 
