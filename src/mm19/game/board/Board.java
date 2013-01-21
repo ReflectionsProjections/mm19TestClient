@@ -258,6 +258,10 @@ public class Board {
         public void removeShip(){
             currentShip = null;
             occupied = false;
-        }
+        }  
     }
-}
+
+
+
+
+
