@@ -23,9 +23,9 @@ public abstract class Ship {
 	public static enum Orientation { HORIZONTAL, VERTICAL }
 	
 	// Constructor
-	public Ship(int uId, int boatLength) // x, y, orientation - g/s
+	public Ship(int uID, int boatLength) // x, y, orientation - g/s
 	{
-		this.uId = uId;
+		this.uId = uID;
 		this.boatLength = boatLength;
 	}
 	
@@ -44,12 +44,12 @@ public abstract class Ship {
 		return this.orientation;
 	}
 	
-	public int getBoatLength()
+	public int getLength()
 	{
 		return this.boatLength;
 	}
 	
-	public int getUId()
+	public int getID()
 	{
 		return this.uId;
 	}
