@@ -9,4 +9,9 @@ package mm19.game.ships;
  */
 public class DestroyerShip extends Ship{
 
+	public DestroyerShip(int typeID, int boatLength) {
+		super(typeID, boatLength);
+		// TODO Auto-generated constructor stub
+	}
+
 }
