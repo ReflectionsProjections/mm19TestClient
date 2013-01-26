@@ -79,20 +79,6 @@ public class Board {
     }
 
     /**
-     * Returns references to all ships on the board within an ArrayList.
-     *
-     * @return An ArrayList containing all ships.
-     */
-    public ArrayList<Ship> getShips() {
-        ShipData[] shipData = ships.values().toArray(new ShipData[0]);
-        ArrayList<Ship> shipArray = new ArrayList<Ship>();
-        for (int i = 0; i < shipData.length; i++) {
-            shipArray.add(shipData[i].getShip());
-        }
-        return shipArray;
-    }
-
-    /**
      * Searches the Ship storage for the given shipID
      *
      * @param shipID ID of the Ship to search for
@@ -100,7 +86,24 @@ public class Board {
      */
     public Ship getShip(int shipID) {
         ShipData shipData = ships.get(shipID);
+        if (shipData == null) {
+            return null;
+        }
         return shipData.getShip();
+    }
+
+    /**
+     * Returns references to all ships on the board within an ArrayList.
+     *
+     * @return An ArrayList containing all ships.
+     */
+    public ArrayList<Ship> getShips() {
+        ShipData[] shipDataArray = ships.values().toArray(new ShipData[0]);
+        ArrayList<Ship> shipArray = new ArrayList<Ship>();
+        for (ShipData shipData : shipDataArray) {
+            shipArray.add(shipData.getShip());
+        }
+        return shipArray;
     }
 
     /**
@@ -112,50 +115,10 @@ public class Board {
      */
     public Position getShipPosition(int shipID) {
         ShipData shipData = ships.get(shipID);
-        return shipData.getPosition();
-    }
-
-    /**
-     * Searches the Ship storage for the provided Ship and returns the
-     * corresponding Ship's position
-     *
-     * @param ship A reference to the Ship to lookup the position of.
-     * @return A Ship's position if it is on the board, null otherwise
-     */
-    public Position getShipPosition(Ship ship) {
-        return getShipPosition(ship.getID());
-    }
-
-    /**
-     * Attempts to place a Ship on the board.
-     *
-     * @param ship        The Ship to place
-     * @param shipX       X coordinate to place Ship at
-     * @param shipY       Y coordinate to place Ship at
-     * @param orientation Orientation of the Ship
-     * @return True if the ship could be placed, false otherwise.
-     */
-    public boolean placeShip(Ship ship, int shipX, int shipY, Position.Orientation orientation) {
-        if (!canPlaceShip(ship, shipX, shipY, orientation))
-            return false;
-
-        //Store Ship's data in hash table
-        ShipData shipData = new ShipData();
-        shipData.setShip(ship);
-        shipData.setPosition(new Position(shipX, shipY, orientation));
-        ships.put(ship.getID(), shipData);
-
-        int x = shipX;
-        int y = shipY;
-        for (int i = 0; i < ship.getLength(); i++) {
-            if (orientation == Position.Orientation.VERTICAL) {
-                y = shipY - i;
-            } else {
-                x = shipX - i;
-            }
-            tiles[x][y].setShip(ship);
+        if (shipData == null) {
+            return null;
         }
-        return true;
+        return shipData.getPosition();
     }
 
     /**
@@ -166,7 +129,27 @@ public class Board {
      * @return True if the ship could be placed, false otherwise.
      */
     public boolean placeShip(Ship ship, Position position) {
-        return placeShip(ship, position.x, position.y, position.orientation);
+        if (ship == null || position == null || !canPlaceShip(ship, position)
+                || getShip(ship.getID()) != null)
+            return false;
+
+        //Store Ship's data in hash table
+        ShipData shipData = new ShipData();
+        shipData.setShip(ship);
+        shipData.setPosition(position);
+        ships.put(ship.getID(), shipData);
+
+        int x = position.x;
+        int y = position.y;
+        for (int i = 0; i < ship.getLength(); i++) {
+            if (position.orientation == Position.Orientation.VERTICAL) {
+                y = position.y - i;
+            } else {
+                x = position.x - i;
+            }
+            tiles[x][y].setShip(ship);
+        }
+        return true;
     }
 
     /**
@@ -181,7 +164,7 @@ public class Board {
             return null;
 
         Ship ship = tiles[x][y].getShip();
-        Position shipPosition = getShipPosition(ship);
+        Position shipPosition = getShipPosition(ship.getID());
         int shipX = shipPosition.x;
         int shipY = shipPosition.y;
         Position.Orientation orientation = shipPosition.orientation;
@@ -201,27 +184,38 @@ public class Board {
         return ship;
     }
 
+    public Ship removeShip(int shipID) {
+        Position position = getShipPosition(shipID);
+        if (position == null)
+            return null;
+        return removeShip(position.x, position.y);
+    }
+
+
     /**
      * Attempts to move a ship from one position to another by first removing the ship
      * from the board, checking if the requested position is available and then placing
      * the ship.  If the position was not available, it is placed back in its original
      * position.
      *
-     * @param ship        The Ship to move
-     * @param x           X coordinate to move Ship to
-     * @param y           Y coordinate to move Ship to
-     * @param orientation New orientation for Ship
+     * @param shipID      ID of Ship to move
+     * @param newPosition Position to move the boat to.
      * @return True if Ship could be moved, false otherwise
      */
-    public boolean moveShip(Ship ship, int x, int y, Position.Orientation orientation) {
-        Position currentPosition = getShipPosition(ship);
+    public boolean moveShip(int shipID, Position newPosition) {
+        Ship ship = getShip(shipID);
+        Position currentPosition = getShipPosition(ship.getID());
+
+        if (currentPosition == null || newPosition == null) {
+            return false;
+        }
         removeShip(currentPosition.x, currentPosition.y);
 
-        if (canPlaceShip(ship, x, y, orientation)) {
-            placeShip(ship, x, y, orientation);
+        if (canPlaceShip(ship, newPosition)) {
+            placeShip(ship, newPosition);
             return true;
         } else {
-            placeShip(ship, currentPosition.x, currentPosition.y, currentPosition.orientation);
+            placeShip(ship, currentPosition);
             return false;
         }
     }
@@ -230,9 +224,9 @@ public class Board {
      * Resets the board to it's post-constructor state by removing all ships.
      */
     public void reset() {
-        ShipData[] shipData = ships.values().toArray(new ShipData[0]);
-        for (int i = 0; i < shipData.length; i++) {
-            Position shipPosition = shipData[i].getPosition();
+        ShipData[] shipDataArray = ships.values().toArray(new ShipData[0]);
+        for (ShipData shipData : shipDataArray) {
+            Position shipPosition = shipData.getPosition();
             removeShip(shipPosition.x, shipPosition.y);
         }
     }
@@ -249,20 +243,21 @@ public class Board {
     /**
      * Reports if a Ship can be placed on the Board
      *
-     * @param ship        The Ship to place
-     * @param shipX       X coordinate of Ship
-     * @param shipY       Y coordinate of Ship
-     * @param orientation Orientation of the ship
+     * @param ship     The Ship to place
+     * @param position Position of the ship
      * @return Returns true if the ship can be placed, false otherwise
      */
-    private boolean canPlaceShip(Ship ship, int shipX, int shipY, Position.Orientation orientation) {
-        int x = shipX;
-        int y = shipY;
+    private boolean canPlaceShip(Ship ship, Position position) {
+        if (ship == null || position == null) {
+            return false;
+        }
+        int x = position.x;
+        int y = position.y;
         for (int i = 0; i < ship.getLength(); i++) {
-            if (orientation == Position.Orientation.VERTICAL) {
-                y = shipY - i;
+            if (position.orientation == Position.Orientation.VERTICAL) {
+                y = position.y - i;
             } else {
-                x = shipX - i;
+                x = position.x - i;
             }
             if (!inBounds(x, y) || isOccupied(x, y)) {
                 return false;
@@ -295,8 +290,8 @@ public class Board {
 
     /**
      * @author mm19
-     *         <p/>
-     *         The entities which make up the board
+     *
+     * The entities which make up the board
      */
     private class Tile {
 
@@ -325,7 +320,7 @@ public class Board {
         /**
          * Sets a reference to the ship currently occupying this Tile
          *
-         * @param ship
+         * @param ship Reference to ship to store in this tile
          */
         public void setShip(Ship ship) {
             currentShip = ship;
@@ -350,8 +345,8 @@ public class Board {
 
     /**
      * @author mm19
-     *         <p/>
-     *         Private class for storage of data relevent to a ship on a board
+     *
+     * Private class for storage of data relevent to a ship on a board
      */
     private class ShipData {
         private Ship ship;
