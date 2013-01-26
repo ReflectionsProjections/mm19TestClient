@@ -11,15 +11,15 @@ public class Position {
     // Enum for orientation
     public static enum Orientation { HORIZONTAL, VERTICAL }
 
-    public final int x;
-    public final int y;
-    public final Orientation orientation;
+    final public int x;
+    final public int y;
+    final public Orientation orientation;
 
     /**
      * Constructor for positions.
-     * @param x
-     * @param y
-     * @param orientation
+     * @param x X Coordinate
+     * @param y Y Coordinate
+     * @param orientation See Orientation enum for possible values
      */
     public Position(int x, int y, Orientation orientation){
         this.x = x;

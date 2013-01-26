@@ -4,9 +4,6 @@ import mm19.game.ships.Ship;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-
 
 /**
  * 
@@ -16,12 +13,22 @@ import java.util.LinkedList;
  *
  */
 public class Board {
+    final public static int DEFAULT_WIDTH = 100;
+    final public static int DEFAULT_HEIGHT = 100;
 
     private Tile[][] tiles;
     private int width;
     private int height;
 
     private HashMap<Integer, ShipData> ships = new HashMap<Integer, ShipData>();
+
+    /**
+     * Constructor
+     * Initializes board with default width and height.
+     */
+    public Board(){
+        this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
 
     /**
      * Constructor.  Takes a width and a height and initializes the double Tile array.
