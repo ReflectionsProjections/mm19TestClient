@@ -10,10 +10,7 @@ package mm19.game.ships;
  *
  */
 public class PilotShip extends Ship{
-	public PilotShip(int x, int y, Orientation o){
+	public PilotShip(){
 		super(2,2);
-		setX(x);
-		setY(y);
-		setOrientation(o);
 	}
 }

@@ -3,6 +3,7 @@ package mm19.game.player;
 import java.util.ArrayList;
 
 import mm19.game.board.Board;
+import mm19.game.board.Position;
 import mm19.game.ships.Ship;
 
 /**
@@ -28,10 +29,27 @@ public class Player {
 		canSpecial = true;
 		
 	}
-	
-	public Board setMap(ArrayList<Ship> ships){
+
+    /*
+     * TODO: Eric made an assumption that ship Positions could be passed in as a parallel ArrayList.
+     * If you would prefer a different implementation, please change this method accordingly.
+     * If this implementation is fine, please remove this TODO.
+     */
+    /**
+     * Attempts to place the player's starting ships in their requested positions.
+     *
+     * @param ships An ArrayList containing the ships to place
+     * @param positions An ArrayList containing Positions indicating where the ships should be placed.
+     * @return The player's Board if the placements were successful, null otherwise
+     */
+	public Board setMap(ArrayList<Ship> ships, ArrayList<Position> positions){
 		for(int i = 0; i < ships.size(); i++){
-			if(!board.placeShip(ships.get(i)))
+            Ship ship = ships.get(i);
+            Position position = positions.get(i);
+
+            boolean shipPlaced = board.placeShip(ship, position);
+
+			if(!shipPlaced)
 			{
 				board.reset();
 				return null;

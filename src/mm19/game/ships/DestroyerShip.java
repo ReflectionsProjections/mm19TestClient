@@ -1,5 +1,7 @@
 package mm19.game.ships;
 
+import mm19.game.board.Position;
+
 /**
  * 
  * @author mm19
@@ -11,10 +13,7 @@ package mm19.game.ships;
  *
  */
 public class DestroyerShip extends Ship{
-	public DestroyerShip(int x, int y, Orientation o){
+	public DestroyerShip(){
 		super(1,4);
-		setX(x);
-		setY(y);
-		setOrientation(o);
 	}
 }
