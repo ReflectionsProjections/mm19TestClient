@@ -18,8 +18,7 @@ public class PilotShip extends Ship {
 
     /**
      * Constructor
-     * Sets length using parent constructor
-     * TODO: Also set health using the parent constructor
+     * Sets length and health using parent constructor
      */
     public PilotShip() {
         super(LENGTH, HEALTH);

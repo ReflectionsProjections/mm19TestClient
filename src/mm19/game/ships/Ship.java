@@ -17,7 +17,8 @@ public abstract class Ship {
      * Constructor
      * Gives the instantiated Ship a unique identifier and specifies the length.
      *
-     * @param length The length of the boat.
+     * @param length The length of the Ship.
+     * @param health The health of the Ship.
      */
     public Ship(int length, int health) {
         ID = nextID;
@@ -37,9 +38,9 @@ public abstract class Ship {
     }
 
     /**
-     * Reports the boats unique identifier
+     * Reports the Ship's unique identifier
      *
-     * @return A unique identifier for the boat
+     * @return A unique identifier for the Ship
      */
     public int getID() {
         return ID;
@@ -55,7 +56,7 @@ public abstract class Ship {
     }
 
     /**
-     * Applies damage to the boat
+     * Applies damage to the Ship
      *
      * @param damage Amount of damage to deal to the ship
      * @return The Ship's remaining health
