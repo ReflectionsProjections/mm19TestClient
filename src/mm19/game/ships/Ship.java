@@ -16,6 +16,7 @@ public abstract class Ship {
     /**
      * Constructor
      * Gives the instantiated Ship a unique identifier and specifies the length.
+     *
      * @param length The length of the boat.
      */
     public Ship(int length, int health) {
@@ -28,6 +29,7 @@ public abstract class Ship {
 
     /**
      * Reports the length of the Ship
+     *
      * @return Length of Ship
      */
     public int getLength() {
@@ -36,6 +38,7 @@ public abstract class Ship {
 
     /**
      * Reports the boats unique identifier
+     *
      * @return A unique identifier for the boat
      */
     public int getID() {
@@ -44,6 +47,7 @@ public abstract class Ship {
 
     /**
      * Reports the health of the Ship
+     *
      * @return Health of ship
      */
     public int getHealth() {
@@ -52,11 +56,12 @@ public abstract class Ship {
 
     /**
      * Applies damage to the boat
+     *
      * @param damage Amount of damage to deal to the ship
      * @return The Ship's remaining health
      */
     public int applyDamage(int damage) {
-        if( damage > 0) {
+        if (damage > 0) {
             health -= damage;
         }
         return health;
@@ -64,9 +69,10 @@ public abstract class Ship {
 
     /**
      * Reports whether or not the ship has sunk
+     *
      * @return True if the ship is still afloat, false if destroyed.
      */
-    public boolean isAlive(){
+    public boolean isAlive() {
         return (health > 0);
     }
 }

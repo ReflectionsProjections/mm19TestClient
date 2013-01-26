@@ -1,15 +1,15 @@
 package mm19.game.board;
 
 /**
- *
  * @author mm19
  *
  * An immutable data object for positions
- *
  */
 public class Position {
     // Enum for orientation
-    public static enum Orientation { HORIZONTAL, VERTICAL }
+    public static enum Orientation {
+        HORIZONTAL, VERTICAL
+    }
 
     final public int x;
     final public int y;
@@ -17,11 +17,12 @@ public class Position {
 
     /**
      * Constructor for positions.
-     * @param x X Coordinate
-     * @param y Y Coordinate
+     *
+     * @param x           X Coordinate
+     * @param y           Y Coordinate
      * @param orientation See Orientation enum for possible values
      */
-    public Position(int x, int y, Orientation orientation){
+    public Position(int x, int y, Orientation orientation) {
         this.x = x;
         this.y = y;
         this.orientation = orientation;
