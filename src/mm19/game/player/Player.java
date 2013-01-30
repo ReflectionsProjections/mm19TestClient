@@ -68,7 +68,7 @@ public class Player {
      *
      * @return True if the player still has a MainShip, false otherwise.
      */
-    private boolean isAlive() {
+    public boolean isAlive() {
         ArrayList<Ship> ships = board.getShips();
         for (Ship ship : ships) {
             if (ship instanceof MainShip) {
