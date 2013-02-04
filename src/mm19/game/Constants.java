@@ -8,6 +8,7 @@ package mm19.game;
  */
 public class Constants {
     final public static int MISSILE_DAMAGE = 10;
+    final public static int MISSILE_COST = 50;
 
     final private static double BURST_SHOT_EFFECTIVENESS = 0.7;
     final public static int BURST_SHOT_DAMAGE = (int)(MISSILE_DAMAGE * BURST_SHOT_EFFECTIVENESS);
