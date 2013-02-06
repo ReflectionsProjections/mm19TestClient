@@ -14,7 +14,10 @@ LIBRARIES:
     Uses json_parse.js to parse the log.
 
 TODO:
+    switch to using MVC design pattern
+    redesign log format
     add effects for sonar, shots, and burst shots
+    add animations for movement
 
 BUGS:
     Happy to report, none at the moment.
