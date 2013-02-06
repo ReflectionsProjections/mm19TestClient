@@ -51,9 +51,9 @@
                     "orientation": "H"
                 }
             ],
-            "shipActionResults": [ ],
-            "hitReport": [ ],
-            "pingReport": [ ]
+            "shipActionResults": [],
+            "hitReport": [],
+            "pingReport": []
         },
         {
             "error": [],
@@ -102,9 +102,9 @@
                     "orientation": "H"
                 }
             ],
-            "shipActionResults": [ ],
-            "hitReport": [ ],
-            "pingReport": [ ]
+            "shipActionResults": [],
+            "hitReport": [],
+            "pingReport": []
         },
         {
             "error": [],
@@ -145,9 +145,103 @@
                     "orientation": "H"
                 }
             ],
-            "shipActionResults": [ ],
-            "hitReport": [ ],
-            "pingReport": [ ]
+            "shipActionResults": [],
+            "hitReport": [],
+            "pingReport": []
+        },
+        {
+            "error": [],
+            "playerName": "Thomas",
+            "playerID": 123479213,
+            "resources": 50,
+            "ships": [
+                {
+                    "health": 50,
+                    "ID": 1,
+                    "type": "M",
+                    "xCoord": 4,
+                    "yCoord": 0,
+                    "orientation": "H"
+                },
+                {
+                    "health": 30,
+                    "ID": 2,
+                    "type": "D",
+                    "xCoord": 22,
+                    "yCoord": 10,
+                    "orientation": "H"
+                },
+                {
+                    "health": 20,
+                    "ID": 3,
+                    "type": "P",
+                    "xCoord": 20,
+                    "yCoord": 20,
+                    "orientation": "V"
+                },
+                {
+                    "health": 40,
+                    "ID": 4,
+                    "type": "D",
+                    "xCoord": 80,
+                    "yCoord": 30,
+                    "orientation": "V"
+                },
+                {
+                    "health": 20,
+                    "ID": 5,
+                    "type": "P",
+                    "xCoord": 100,
+                    "yCoord": 100,
+                    "orientation": "H"
+                }
+            ],
+            "shipActionResults": [],
+            "hitReport": [],
+            "pingReport": []
+        },
+        {
+            "error": [],
+            "playerName": "Roger",
+            "playerID": 123479842,
+            "resources": 20,
+            "ships": [
+                {
+                    "health": 50,
+                    "ID": 1,
+                    "type": "M",
+                    "xCoord": 20,
+                    "yCoord": 5,
+                    "orientation": "H"
+                },
+                {
+                    "health": 30,
+                    "ID": 2,
+                    "type": "D",
+                    "xCoord": 20,
+                    "yCoord": 10,
+                    "orientation": "H"
+                },
+                {
+                    "health": 20,
+                    "ID": 3,
+                    "type": "P",
+                    "xCoord": 20,
+                    "yCoord": 20,
+                    "orientation": "V"
+                },
+                {
+                    "health": 20,
+                    "ID": 5,
+                    "type": "P",
+                    "xCoord": 40,
+                    "yCoord": 30,
+                    "orientation": "H"
+                }
+            ],
+            "shipActionResults": [],
+            "hitReport": [],
+            "pingReport": []
         }
     ]
 }

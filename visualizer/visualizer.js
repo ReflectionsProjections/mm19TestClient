@@ -13,8 +13,8 @@ var TICK_LENGTH = 1000;
 //global object for currentLog being simulated
 var currentLog = {};
 
-//global object holding turns to be processed
-var globalTurns = [];
+//global object holding turns to be processed, first element holds current turn being processed
+var globalTurns = [1];
 
 //global raphael canvas object
 var canvas;
@@ -32,7 +32,7 @@ function visualizeGame() {
     //make local so doesnt get overwritten
     var log = currentLog;
 
-    globalTurns = copyTurns(log.turns);
+    globalTurns = [1].concat(copyTurns(log.turns));
 
     if (canvas) {
         canvas.clear();
@@ -60,10 +60,10 @@ function drawFrame(display, index) {
         return;
     }
     //if were out of turns to render
-    if (globalTurns.length === 0) {
+    if (globalTurns[0] >= globalTurns.length) {
         return;
     }
-    var turn = globalTurns.shift();
+    var turn = globalTurns[globalTurns[0]++];
 
     try {
         drawTurn(display, turn);
@@ -71,8 +71,10 @@ function drawFrame(display, index) {
         alert("Invalid turn format!");
     }
 
+    drawEffects(display, globalTurns[globalTurns[0]-3]);
+
     //ask for callback
-    window.setTimeout(drawFrame, TICK_LENGTH, display);
+    window.setTimeout(drawFrame, TICK_LENGTH, display, game_ind);
 };
 
 
@@ -113,6 +115,22 @@ function drawTurn(display, turn) {
                 display.canvasElements[player].x,
                 display.canvasElements[player].y);
     }
+
+};
+
+
+
+
+function explosion(x, y, r, color) {
+    var c = canvas.circle(x, y, 0);
+    c.attr({"fill" : color});
+    c.animate({"r": r}, Math.floor(TICK_LENGTH / 4), "linear", function() {
+        c.remove();
+    });
+};
+
+function drawEffects(display, turn) {
+
 };
 
 /**
@@ -277,10 +295,10 @@ function setupCanvas() {
 
     display.canvasElements = {};
 
-    var turn1 = globalTurns.shift();
+    var turn1 = globalTurns[globalTurns[0]++];
     display.canvasElements[turn1.playerName] = initializePlayer(display, turn1, 0);
 
-    var turn2 = globalTurns.shift();
+    var turn2 = globalTurns[globalTurns[0]++];
     display.canvasElements[turn2.playerName] = initializePlayer(display, turn2, display.browser.boardWidth);
 
 
