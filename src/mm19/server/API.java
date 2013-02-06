@@ -1,4 +1,8 @@
 package mm19.server;
+import java.util.ArrayList;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
 
 /**
  * 
@@ -9,5 +13,32 @@ package mm19.server;
  *
  */
 public class API {
-
+	JSONObject player1;
+	JSONObject player2;
+	public void decode(JSONObject json){
+		try {
+			JSONArray Actions = (JSONArray)json.get("shipActions");
+			JSONObject temp;
+			ArrayList<Action> actionList = new ArrayList<Action>();
+			for(int i = 0; i < Actions.size(); i++)	{
+				temp = (JSONObject) Actions.get(i);
+				//actionList.add((int)temp.get(“ID”), (int)temp.get(“actionID”), (int)temp.get(“actionX”), (int)temp.get(“actionY”));
+			}
+			//engine.blob(actionList, (int)json.get("PlayerID"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeP1(Result r){
+		
+	}
+	
+	public void writeP2(Result r){
+		
+	}
+	
+	public void send(int PlayerID){
+		
+	}
 }
