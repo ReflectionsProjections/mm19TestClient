@@ -1,6 +1,6 @@
 package mm19.game.ships;
 
-import mm19.game.Constants;
+import mm19.game.Ability;
 
 /**
  * @author mm19
@@ -13,6 +13,7 @@ public abstract class Ship {
     final private int ID;
     final private int length;
 
+    private boolean abilityUsed = false;
     private int health;
 
     /**
@@ -85,7 +86,29 @@ public abstract class Ship {
      * @return Number of resources needed to move ship
      */
     public int getMoveCost() {
-        return getLength() * Constants.MOVE_COST_PER_UNIT_LENGTH;
+        return getLength() * Ability.MOVE_COST_PER_UNIT_LENGTH;
+    }
+
+    /**
+     * Indicates whether the ship has used an ability in the current turn
+     * @return True if the ship has used an ability, false otherwise
+     */
+    public boolean hasUsedAbility() {
+        return abilityUsed;
+    }
+
+    /**
+     * Sets state indicating the ship has used an ability
+     */
+    public void useAbility() {
+        abilityUsed = true;
+    }
+
+    /**
+     * Resets ship ability
+     */
+    public void resetAbility() {
+        abilityUsed = false;
     }
 
     /**
