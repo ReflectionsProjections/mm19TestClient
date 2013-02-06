@@ -22,7 +22,6 @@ public class PlayerTests {
 		assertEquals("Initial resource amount does not match player's initial resources", 
 				testPlayer.getResources(), 10);
 
-
         //TODO The value of playerIDs are dependant on the order of tests being run.  Commenting out this test.
         /* assertEquals("playerID does not match original nextPlayerID (should be 0)",
 		 *		testPlayer.getPlayerID(), 0);
