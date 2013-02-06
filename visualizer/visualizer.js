@@ -7,6 +7,8 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 
+//constant for length between animation frames in milliseconds
+var TICK_LENGTH = 1000;
 
 //global object for currentLog being simulated
 var currentLog = {};
@@ -14,11 +16,11 @@ var currentLog = {};
 //global object holding turns to be processed
 var globalTurns = [];
 
-//constant for length between animation frames in milliseconds
-var TICK_LENGTH = 1000;
-
 //global raphael canvas object
 var canvas;
+
+//global index for which game we're running, so we don't render old games
+var game_ind = 0;
 
 /**
 * setups a game to be visualized and sets initial timer interrupt for displaying turns
@@ -26,6 +28,7 @@ var canvas;
 * This is called when you hit the Run Game button.
 */
 function visualizeGame() {
+    game_ind++;
     //make local so doesnt get overwritten
     var log = currentLog;
 
@@ -35,7 +38,181 @@ function visualizeGame() {
         canvas.clear();
         canvas.remove();
     }
-    
+
+    // try {
+        var display = setupCanvas(log);
+    // } catch (error) {
+    //     alert("Invalid log file!");
+    //     return;
+    // }
+
+    window.setTimeout(drawFrame, TICK_LENGTH, display, game_ind);
+};
+
+/**
+* Pops a turn off global turn object and draws it
+* @param display object defined and initialized in setupCanvas
+* @param index of game being drawn, if doesnt match up with global game_ind, stop animating
+*/
+function drawFrame(display, index) {
+    //if were still rendering an old game
+    if (index !== game_ind) {
+        return;
+    }
+    //if were out of turns to render
+    if (globalTurns.length === 0) {
+        return;
+    }
+    var turn = globalTurns.shift();
+
+    try {
+        drawTurn(display, turn);
+    } catch (error) {
+        alert("Invalid turn format!");
+    }
+
+    //ask for callback
+    window.setTimeout(drawFrame, TICK_LENGTH, display);
+};
+
+
+/**
+* Draws and animates a single turn
+* @param display object defined and initialized in setupCanvas
+* @param turn object to be drawn
+*/
+function drawTurn(display, turn) {
+    var player = turn.playerName;
+
+    //update their resources
+    display.canvasElements[player].resources.attr({"text" : String(turn.resources)});
+
+    turn.ships.sort(shipComparator);
+
+    var ind;
+
+    //delete old images
+    for (ind = 0; ind < display.canvasElements[player].ships.length; ind++) {
+        //object holding old shapes
+        shipShapes = display.canvasElements[player].ships[ind];
+        if (shipShapes) {
+            shipShapes.ship.remove();
+            shipShapes.health.remove();
+            shipShapes.neg.remove();
+        }
+    }
+
+    //add new images
+    for (ind = 0; ind < turn.ships.length; ind++) {
+        var ship_id = turn.ships[ind].ID;
+
+        display.canvasElements[player].ships[ship_id] =
+            drawShip(
+                turn.ships[ind],
+                display.browser.boxWidth,
+                display.canvasElements[player].x,
+                display.canvasElements[player].y);
+    }
+};
+
+/**
+* Make a shallow copy of the turns array so popping from the queue doesn't pop it from the global log.
+* This way you can hit run button multiple times on the same json and start at the beginning of the game
+* @param turns Array of turns to be copied
+* @return Copied array of turns
+*/
+function copyTurns(turns) {
+    var turnsClone = [];
+    var ind;
+    for (ind = 0; ind < turns.length; ind++) {
+        turnsClone[ind] = turns[ind];
+    }
+    return turnsClone;
+};
+
+/**
+* Returns a ship object of raphael elements which looks like:
+* {
+*       "ship" : an ellipse representing the ship
+*       "health" : a green rectangle representing the remaining health
+*       "neg" : a red rectangle representing lost health
+* }
+*
+* @param ship     ship object given in the log
+* @param boxWidth width of a tile in pixels
+* @param xOffset  horizontal offset of players board
+* @return ship object as defined above
+*/
+function drawShip(ship, boxWidth, xOffset, yOffset) {
+    if (ship.health <= 0) {
+        return null;
+    }
+
+    var shipLib = {
+        "M" : {
+            "width" : 5,
+            "health" : 60
+        },
+        "D" : {
+            "width" : 4,
+            "health" : 40
+        },
+        "P" : {
+            "width" : 2,
+            "health" : 20
+        }
+    };
+
+    var elements = {};
+    //width and height of ship in pixels
+    var width = boxWidth * shipLib[ship.type].width;
+    var height = boxWidth;
+    //if vertical, swap width and height
+    if (ship.orientation === "V") {
+        height = width;
+        width = boxWidth;
+    }
+
+    //width and height are changed to express radii of ellipse
+    width = Math.floor(width/2);
+    height = Math.floor(height/2);
+
+    var centerX = ship.xCoord * boxWidth - width + xOffset;
+    var centerY = ship.yCoord * boxWidth - height + yOffset;
+
+    //adds ship
+    elements.ship = canvas.ellipse(centerX, centerY, width, height).attr({"fill" : "#809080"});
+
+    var barWidth = boxWidth * Math.floor(shipLib[ship.type].health / 20);
+    //adds red bar, underneath green bar
+    elements.neg = canvas.rect(centerX - barWidth,
+                              centerY - height - 8,
+                              barWidth * 2,
+                              5);
+    elements.neg.attr({"fill" : "#FF0000"});
+    //adds green bar for shp health
+    elements.health = canvas.rect(centerX - barWidth,
+                                 centerY - height - 8,
+                                 boxWidth * Math.floor(ship.health/10),
+                                 5);
+    elements.health.attr({"fill" : "#00FF00"});
+
+    return elements;
+}
+
+/**
+* Compare function used to sort ships by ID.
+* Only used as a functor for sort function.
+*/
+function shipComparator(a, b) {
+    return a.ID - b.ID;
+}
+
+/**
+* Setup canvas and display object for drawing a game.  Draws the initial state of game as well.
+* @return display object defined below
+*/
+function setupCanvas() {
     /*
     This is what display looks like
     var display = {
@@ -58,8 +235,11 @@ function visualizeGame() {
             "Roger" : {
                 //xOffset for board
                 "x" : 0,
+                //yOffset for board
+                "y" : 0,
                 //paper element displaying resources string
                 "resources" : 0,
+                //index into ships is ship_id
                 "ships" : [
                     {
                         //paper element displaying ship
@@ -75,6 +255,7 @@ function visualizeGame() {
             },
             "Paul" : {
                 "x" : 0,
+                "y" : 0,
                 "resources" : 0,
                 "ships" : [
                     {},
@@ -85,139 +266,6 @@ function visualizeGame() {
         }
     };
     */
-
-    var display = setupCanvas(log);
-
-    window.setTimeout(drawFrame, TICK_LENGTH, display);
-};
-
-/**
-* Make a shallow copy of the turns array so popping from the queue doesn't pop it from the global log.
-* This way you can hit run button multiple times on the same json and start at the beginning of the game
-* @param turns Array of turns to be copied
-* @return Copied array of turns
-*/
-function copyTurns(turns) {
-    var turnsClone = [];
-    var ind;
-    for (ind = 0; ind < turns.length; ind++) {
-        turnsClone[ind] = turns[ind];
-    }
-    return turnsClone;
-};
-
-/**
-* Draws a single turn, or frame in the animation of a game.
-* @param display object defined in visualizeGame and initialized in setupCanvas
-*/
-function drawFrame(display) {
-    if (globalTurns.length === 0) {
-        return;
-    }
-    var turn = globalTurns.shift();
-    var player = turn.playerName;
-
-    //update their resources
-    display.canvasElements[player].resources.attr({"text" : String(turn.resources)});
-
-    turn.ships.sort(shipComparator);
-
-    var ind;
-    var ship;
-    for (ind = 0; ind < turn.ships.length; ind++) {
-        //remove old shapes from paper
-        shipShapes = display.canvasElements[player].ships[ind];
-        shipShapes.ship.remove();
-        shipShapes.health.remove();
-        shipShapes.neg.remove();
-
-        display.canvasElements[player].ships[ind] =
-            drawShip(
-                turn.ships[ind],
-                display.browser.boxWidth,
-                display.canvasElements[player].x);
-    }
-
-    //ask for callback
-    window.setTimeout(drawFrame, TICK_LENGTH, display);
-};
-
-/**
-* Returns a ship object of raphael elements which looks like:
-* {
-*       "ship" : an ellipse representing the ship
-*       "health" : a green rectangle representing the remaining health
-*       "neg" : a red rectangle representing lost health
-* }
-*
-* @param ship     ship object given in the log
-* @param boxWidth width of a tile in pixels
-* @param xOffset  horizontal offset of players board
-* @return ship object as defined above
-*/
-function drawShip(ship, boxWidth, xOffset) {
-    var shipLib = {
-        "M" : {
-            "width" : 5,
-            "health" : 60
-        },
-        "D" : {
-            "width" : 4,
-            "health" : 40
-        },
-        "P" : {
-            "width" : 2,
-            "health" : 20
-        }
-    };
-
-    var elements = {};
-    var width = boxWidth * shipLib[ship.type].width;
-    var height = boxWidth;
-    //if vertical, swap width and height
-    if (ship.orientation == "V") {
-        height = width;
-        width = boxWidth;
-    }
-
-    //width and height are changed to express radii of ellipse
-    width = Math.floor(width/2);
-    height = Math.floor(height/2);
-
-    var centerX = ship.xCoord * boxWidth + width + xOffset;
-    var centerY = ship.yCoord * boxWidth + height;
-
-    //adds ship
-    elements.ship = canvas.ellipse(centerX, centerY, width, height);
-    //adds red bar, underneath green bar
-    elements.neg = canvas.rect(centerX - width,
-                              centerY - height - 8,
-                              boxWidth * Math.floor(shipLib[ship.type].health / 10),
-                              5);
-    elements.neg.attr({"fill" : "#FF0000"});
-    //adds green bar for shp health
-    elements.health = canvas.rect(centerX - width,
-                                 centerY - height - 8,
-                                 boxWidth * Math.floor(ship.health/10),
-                                 5);
-    elements.health.attr({"fill" : "#00FF00"});
-
-    return elements;
-}
-
-/**
-* Compare function used to sort ships by ID.
-* Only used as a functor for sort function.
-*/
-function shipComparator(a, b) {
-    return a.ID - b.ID;
-}
-
-/**
-* Setup canvas and display object for drawing a game.  Draws the initial state of game as well.
-* @return display object defined in visualizeGame
-*/
-function setupCanvas() {
     var display = {};
 
     display.browser = setupBrowserSettings();
@@ -241,17 +289,19 @@ function setupCanvas() {
 
 /**
 * Setups various browser settings based on the width of the window.
-* @return An object representing browser settings, defined in display object in visualizeGame
+* @return An object representing browser settings, defined in display object setupCanvas
 */
 function setupBrowserSettings() {
     var browser = {};
+    var config = currentLog.boardConfiguration;
     browser.width = window.innerWidth;
     browser.height = window.innerHeight;
+    // browser.width = config.width * 16;
+    // browser.width = config.height * 16;
     browser.horizontalMargin = 60;
     browser.verticalMargin = 60;
     browser.boardWidth = Math.min(Math.floor((browser.width - 4 * browser.horizontalMargin)/2),
                                   browser.height - 4 * browser.verticalMargin);
-    var config = currentLog.boardConfiguration;
     browser.boardHeight = browser.boardWidth;
     browser.boxWidth = Math.floor(browser.boardWidth / config.width);
 
@@ -261,7 +311,7 @@ function setupBrowserSettings() {
 
 /**
 * Initializes a singe player's data structures and draws their initial board setup
-* @param display display object defined in visualizeGame
+* @param display display object defined in setupCanvas
 * @param turn object given by log representing player's first turn
 * @param xOffset horizontal offset for player
 */
@@ -273,11 +323,13 @@ function initializePlayer(display, turn, xOffset) {
     canvas.text(50 + xOffset, 5, turn.playerName);
 
     //draw rectangle
-    canvas.rect(xOffset, 15, display.browser.boardWidth, display.browser.boardHeight + 10);
+    canvas.rect(xOffset, 15, display.browser.boardWidth, display.browser.boardHeight + 10).attr({"fill" : "#00CED1"});
+
 
     //intitialize canvasElements
     player = {"ships" : []};
-    player.x = xOffset;
+    player.y = 40;
+    player.x = xOffset + 20;
 
     //draw resource amounts
     player.resources = canvas.text(50 + xOffset, display.browser.boardHeight + 40, String(turn.resources));
@@ -285,7 +337,7 @@ function initializePlayer(display, turn, xOffset) {
     //draw ships
     var ind;
     for (ind = 0; ind < turn.ships.length; ind += 1) {
-        player.ships.push(drawShip(turn.ships[ind], display.browser.boxWidth, xOffset));
+        player.ships[turn.ships[ind].ID] = drawShip(turn.ships[ind], display.browser.boxWidth, player.x, player.y);
     }
 
     return player;
