@@ -42,18 +42,18 @@ public class Engine{
 		//Check for valid playerID
 		Player p=null;
 		Player otherP=null;
-		if(p1.getplayerID()==playerID){
+		if(p1.getPlayerID()==playerID){
 			p=p1;
 			otherP=p2;
 		}
-		else if(p2.getplayerID()==playerID){
+		else if(p2.getPlayerID()==playerID){
 			p=p2;
 			otherP=p1;
 		}
 		if(p==null){
 			//TODO: just got an invalid player ID
 		}
-		for(Action a: actions){
+		for(Action a: actions){ //TODO: check the return value of these functions, save to some type of array list
 			switch(a.actionID){
 				case SHOOT:
 					Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
@@ -72,13 +72,6 @@ public class Engine{
 			}
 			
 		}
-	}
-	
-	/**
-	 * This function does the requested actions by the player, then writes the output to the API
-	 */
-	private void playerAction(){
-		
 	}
 
 }
