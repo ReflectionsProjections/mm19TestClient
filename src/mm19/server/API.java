@@ -1,6 +1,8 @@
 package mm19.server;
 import java.util.ArrayList;
 
+import mm19.game.Action;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
@@ -22,9 +24,10 @@ public class API {
 			ArrayList<Action> actionList = new ArrayList<Action>();
 			for(int i = 0; i < Actions.size(); i++)	{
 				temp = (JSONObject) Actions.get(i);
-				//actionList.add((int)temp.get(“ID”), (int)temp.get(“actionID”), (int)temp.get(“actionX”), (int)temp.get(“actionY”));
+				actionList.add(new Action((int)temp.get("ID"), (int)temp.get("actionID"), 
+						(int)temp.get("actionX"), (int)temp.get("actionY"), (int)temp.get("extra")));
 			}
-			//engine.blob(actionList, (int)json.get("PlayerID"));
+			//playerTurn((int)json.get("PlayerID"), actionList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
