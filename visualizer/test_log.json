@@ -52,25 +52,25 @@
             "actions" : [
                 {
                     "ID" : 1,
-                    "actionID" : 1,
+                    "actionID" : "F",
                     "actionX" : 20,
                     "actionY" : 13
                 },
                 {
                     "ID" : 2,
-                    "actionID" : 1,
+                    "actionID" : "F",
                     "actionX" : 20,
                     "actionY" : 13
                 },
                 {
                     "ID" : 3,
-                    "actionID" : 1,
+                    "actionID" : "B",
                     "actionX" : 5,
                     "actionY" : 4
                 },
                 {
                     "ID" : 4,
-                    "actionID" : 1,
+                    "actionID" : "F",
                     "actionX" : 32,
                     "actionY" : 17
                 }
@@ -124,25 +124,97 @@
             "actions" : [
                 {
                     "ID" : 1,
-                    "actionID" : 1,
+                    "actionID" : "F",
                     "actionX" : 20,
                     "actionY" : 13
                 },
                 {
                     "ID" : 2,
-                    "actionID" : 1,
+                    "actionID" : "F",
                     "actionX" : 20,
                     "actionY" : 13
                 },
                 {
                     "ID" : 3,
-                    "actionID" : 1,
+                    "actionID" : "S",
                     "actionX" : 5,
                     "actionY" : 4
                 },
                 {
                     "ID" : 4,
-                    "actionID" : 1,
+                    "actionID" : "B",
+                    "actionX" : 32,
+                    "actionY" : 17
+                }
+            ]
+        },
+        {
+            "playerName": "Roger",
+            "resources": 75,
+            "ships": [
+                {
+                    "health": 60,
+                    "ID": 1,
+                    "type": "M",
+                    "xCoord": 4,
+                    "yCoord": 0,
+                    "orientation": "H"
+                },
+                {
+                    "health": 30,
+                    "ID": 2,
+                    "type": "D",
+                    "xCoord": 4,
+                    "yCoord": 20,
+                    "orientation": "H"
+                },
+                {
+                    "health": 20,
+                    "ID": 3,
+                    "type": "P",
+                    "xCoord": 20,
+                    "yCoord": 20,
+                    "orientation": "V"
+                },
+                {
+                    "health": 30,
+                    "ID": 4,
+                    "type": "D",
+                    "xCoord": 30,
+                    "yCoord": 30,
+                    "orientation": "V"
+                },
+                {
+                    "health": 20,
+                    "ID": 5,
+                    "type": "P",
+                    "xCoord": 100,
+                    "yCoord": 100,
+                    "orientation": "H"
+                }
+            ],
+            "actions" : [
+                {
+                    "ID" : 1,
+                    "actionID" : "F",
+                    "actionX" : 20,
+                    "actionY" : 13
+                },
+                {
+                    "ID" : 2,
+                    "actionID" : "F",
+                    "actionX" : 20,
+                    "actionY" : 13
+                },
+                {
+                    "ID" : 3,
+                    "actionID" : "F",
+                    "actionX" : 5,
+                    "actionY" : 4
+                },
+                {
+                    "ID" : 4,
+                    "actionID" : "F",
                     "actionX" : 32,
                     "actionY" : 17
                 }
