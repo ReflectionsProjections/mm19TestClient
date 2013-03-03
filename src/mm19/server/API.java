@@ -17,6 +17,9 @@ import org.json.simple.JSONArray;
 public class API {
 	JSONObject player1;
 	JSONObject player2;
+	int p1ID;
+	int p2ID;
+	
 	public void decode(JSONObject json){
 		try {
 			JSONArray Actions = (JSONArray)json.get("shipActions");
@@ -31,6 +34,11 @@ public class API {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void writeResultBoth(ServerResponse r){
+		//writeResultP1(r);
+		//writeResultP2(r);
 	}
 	
 	public void writeP1(Result r){
