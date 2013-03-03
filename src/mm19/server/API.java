@@ -2,8 +2,10 @@ package mm19.server;
 import java.util.ArrayList;
 
 import mm19.game.Action;
+import mm19.game.ships.Ship;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -25,24 +27,110 @@ public class API {
 	
 	JSONArray player1ships;
 	JSONArray player2ships;
-
-	public void decode(JSONObject json){
+	
+	
+	public boolean newData(JSONObject obj)
+	{
+		String playerName;
+		ShipData MainShip;
+		JSONArray shiparr;
+		ArrayList<ShipData> ships;
+		
 		try {
-			
-			JSONArray Actions = (JSONArray)json.get("shipActions");
-			JSONObject temp;
-			ArrayList<Action> actionList = new ArrayList<Action>();
-			for(int i = 0; i < Actions.length(); i++)	{
-				temp = (JSONObject) Actions.get(i);
-				actionList.add(new Action(temp.getInt("ID"), temp.getInt("actionID"),
-						temp.getInt("actionX"), temp.getInt("actionY"), temp.getInt("extra")));
+			if(obj.has("PlayerName") && 
+					((playerName = obj.getString("PlayerName")) != null) )
+			{
+				if(obj.has("mainShip") && 
+						((MainShip = getShip((JSONObject)obj.get("MainShip"))) != null))
+				{
+					if(obj.has("Ships") && 
+							((shiparr = (JSONArray)obj.get("Ships")) != null))
+					{
+						if((ships = getShipList(shiparr)) != null){
+							//TODO send data to engine
+							return true; 						
+						}
+					}
+				}
+				
+				
 			}
-			//playerTurn((int)json.get("PlayerID"), actionList);
-		} catch (Exception e) {
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
+		return false;
+		
 	}
 	
+	/**
+	 * @param ship
+	 * @return returns a valid ship if the given JSONObject contains 
+	 * 			such, null otherwise
+	 */
+	private ShipData getShip(JSONObject ship){
+		// TODO Auto-generated method stub
+		return null;
+		
+	}
+	
+	/**
+	 * @param shiparr
+	 * @return returns the full arraylist of 20 valid ships if the given
+	 * 			JSONArray contains such, any error will cause this function 
+	 * 			return null
+	 */
+	private ArrayList<ShipData> getShipList(JSONArray shiparr) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	
+	public boolean decodeTurn(JSONObject obj){
+		int playerID;
+		ArrayList<Action> actionList;
+		try {
+			if(obj.has("PlayerID") && 
+					((playerID = obj.getInt("PlayerID")) > 0)) //we assume playerID's are nonzero and nonnegative
+			{
+				if(obj.has("shipActions") 
+						&& ((actionList = getActionList((JSONArray)obj.get("shipActions"))) != null))
+				{
+					//TODO send data to engine
+					return true;
+				}
+			}
+			
+		} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
+	 * @param obj
+	 * @return - returns the associated Action in the given 
+	 * 				JSON object contains a valid Action, null otherwise
+	 */
+	private Action getAction(JSONObject obj) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	
+	/**
+	 * @param jsonArray
+	 * @return returns the valid List of Actions if the given 
+	 * 				JSONarray contains such, and null otherwise
+	 */
+	private ArrayList<Action> getActionList(JSONArray jsonArray) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	public void writeResultBoth(ServerResponse r){
 		//writeResultP1(r);
@@ -52,34 +140,34 @@ public class API {
 	public void writeP1(ServerResponse r){
 		
 		// Create new JSON object
-		JSONObject JSONObj = new JSONObject();
+		JSONObject obj = new JSONObject();
 		
 		// Add values to JSON object
-		JSONObj.put("error", r.error);
-		JSONObj.put("playerId", r.playerID);
-		JSONObj.put("playerName", r.playerName);
-		JSONObj.put("resources", r.resources);
-		JSONObj.put("ships", r.ships); // Does this work / Is this necessary?
+		obj.put("error", r.error);
+		obj.put("playerId", r.playerID);
+		obj.put("playerName", r.playerName);
+		obj.put("resources", r.resources);
+		obj.put("ships", r.ships); // Does this work / Is this necessary?
 		
 		// Save JSON object
-		player1results.add(JSONObj); // This will need changing
+		player1results.add(obj); // This will need changing
 		
 	}
 	
 	public void writeP2(ServerResponse r){
 		
 		// Create new JSON object
-		JSONObject JSONObj = new JSONObject();
+		JSONObject obj = new JSONObject();
 		
 		// Add values to JSON object
-		JSONObj.put("error", r.error);
-		JSONObj.put("playerId", r.playerID);
-		JSONObj.put("playerName", r.playerName);
-		JSONObj.put("resources", r.resources);
-		JSONObj.put("ships", r.ships); // Does this work / Is this necessary?
+		obj.put("error", r.error);
+		obj.put("playerId", r.playerID);
+		obj.put("playerName", r.playerName);
+		obj.put("resources", r.resources);
+		obj.put("ships", r.ships); // Does this work / Is this necessary?
 		
 		// Save JSON object
-		player1results.add(JSONObj); // This will need changing
+		player1results.add(obj); // This will need changing
 		
 	}
 	
