@@ -2,6 +2,8 @@ package mm19.server;
 import java.util.ArrayList;
 
 import mm19.game.Action;
+import mm19.game.HitReport;
+import mm19.game.SonarReport;
 import mm19.game.ships.Ship;
 
 import org.json.JSONArray;
@@ -132,46 +134,95 @@ public class API {
 		return null;
 	}
 
-	public void writeResultBoth(ServerResponse r){
-		//writeResultP1(r);
-		//writeResultP2(r);
+	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param ships - array list of current player ships/status
+	 * @return - true if sucessful write
+	 */
+	public boolean writePlayerShips(int status, ArrayList<ShipData> ships){
+		//TODO write shipdata to json
+		return false;
+	}
+	
+	/**
+	 * @param data - the data of a given ship
+	 * @return - a jsonobject containing said data
+	 */
+	private JSONObject makeShipJSON(ShipData data)
+	{
+		return null;
+	}
+	
+	/* may be redundant
+	public boolean writePlayerShipActions(int status, ArrayList<ActionReport> acts){
+		//TODO write action results to json
+	}
+	
+	private JSONObject makeShipActionJSON(ActionReport act)
+	{
+		return null;
+	}
+	*/
+	
+	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param hits - array list of current player hit reports
+	 * @return - true if sucessful write
+	 */
+	public boolean writePlayerHits(int status, ArrayList<HitReport> hits){
+		//TODO write hitdata to json
+		return false;
+	}
+	
+	/**
+	 * @param report - the data of a given hitreport
+	 * @return - a jsonobject containing said data
+	 */
+	private JSONObject makeHitJSON(HitReport report)
+	{
+		return null;
+	}
+	
+	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param pings - array list of current player pings
+	 * @return - true if sucessful write
+	 */
+	public boolean writePlayerPings(int status, ArrayList<SonarReport> pings){
+		//TODO write sonar reports to json
+		return false;
+	}
+	
+	/**
+	 * @param ping - the data of a given ping
+	 * @return - a jsonobject containing said data
+	 */
+	private JSONObject makePingJSON(SonarReport ping)
+	{
+		return null;
+	}
+	
+	//TODO error gen
+	/*
+	public boolean writePlayerErrors(int status, ArrayList<ErrorReport> errs){
+		//TODO write errors reports to json
+		return false;
 	}
 
-	public void writeP1(ServerResponse r){
-		
-		// Create new JSON object
-		JSONObject obj = new JSONObject();
-		
-		// Add values to JSON object
-		obj.put("error", r.error);
-		obj.put("playerId", r.playerID);
-		obj.put("playerName", r.playerName);
-		obj.put("resources", r.resources);
-		obj.put("ships", r.ships); // Does this work / Is this necessary?
-		
-		// Save JSON object
-		player1results.add(obj); // This will need changing
-		
+	private JSONObject makeErrJSON(SonarReport ping)
+	{
+		return null;
 	}
-	
-	public void writeP2(ServerResponse r){
+	*/
 		
-		// Create new JSON object
-		JSONObject obj = new JSONObject();
-		
-		// Add values to JSON object
-		obj.put("error", r.error);
-		obj.put("playerId", r.playerID);
-		obj.put("playerName", r.playerName);
-		obj.put("resources", r.resources);
-		obj.put("ships", r.ships); // Does this work / Is this necessary?
-		
-		// Save JSON object
-		player1results.add(obj); // This will need changing
-		
-	}
-	
-	public void send(int PlayerID){
-		
+	/**
+	 * @param status  - enum that tells us to write to player1, player2 or both
+	 * @param PlayerID - given Player's ID
+	 * @param PlayerName - given Player's Name
+	 * @param resources - given Player's remaining resources
+	 * @return - true if successful send
+	 */
+	public boolean send(int status, int PlayerID, String PlayerName, int resources){
+		return false;
 	}
 }
