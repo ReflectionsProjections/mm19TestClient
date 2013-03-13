@@ -191,7 +191,19 @@ public class API {
 	 * @return - true if sucessful write
 	 */
 	public boolean writePlayerShips(int status, ArrayList<ShipData> ships){
-		//TODO write shipdata to json
+		JSONArray shipsJson = new JSONArray();
+		JSONObject tempShip;
+		int length = ships.size();
+		while(length > 0){
+			length --;
+			if((tempShip = makeShipJSON(ships.get(length)))!=null)
+				shipsJson.put(tempShip);
+		}
+		if(status == 1)
+		{
+			//TODO write conditions
+			
+		}
 		return false;
 	}
 	
