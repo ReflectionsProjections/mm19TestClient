@@ -2,9 +2,10 @@ package mm19.server;
 import java.util.ArrayList;
 
 import mm19.game.Action;
+import mm19.game.Engine;
 import mm19.game.HitReport;
 import mm19.game.SonarReport;
-import mm19.game.ships.Ship;
+import mm19.game.ShipActionResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,20 +21,24 @@ import org.json.JSONObject;
  */
 public class API {
 
-	JSONObject player1;
-	JSONObject player2;
-	int p1ID;
-	int p2ID;
-	JSONArray player1results;
-	JSONArray player2results;
-	
-	JSONArray player1ships;
-	JSONArray player2ships;
+	private JSONObject player1;
+	private JSONObject player2;
+	private int p1ID;
+	private int p2ID;
+	private Engine game;
 	private final int MAX_SIZE = 100; // temporary holder variable move to constants
 	
+	public API(){
+		p1ID = -1;
+		p2ID = -1;
+		player1 = new JSONObject();
+		player2 = new JSONObject();
+	}
 	
 	public boolean newData(JSONObject obj)
 	{
+		int temp;
+		game = new Engine();
 		String playerName;
 		ShipData MainShip;
 		JSONArray shiparr;
@@ -50,7 +55,10 @@ public class API {
 							((shiparr = (JSONArray)obj.get("Ships")) != null))
 					{
 						if((ships = getShipList(shiparr)) != null){
-							//TODO send data to engine
+							ships.add(MainShip);
+							temp = game.playerSet(ships, playerName);
+							if(p1ID == -1) p1ID = temp;
+							else p2ID = temp;
 							return true; 						
 						}
 					}
@@ -70,6 +78,8 @@ public class API {
 	
 
 	public boolean decodeTurn(JSONObject obj){
+		//sanity check
+		if(p1ID == -1 || p2ID == -1) return false;
 		int playerID;
 		ArrayList<Action> actionList;
 		try {
@@ -79,7 +89,7 @@ public class API {
 				if(obj.has("shipActions") 
 						&& ((actionList = getActionList((JSONArray)obj.get("shipActions"))) != null))
 				{
-					//TODO send data to engine
+					game.playerTurn(playerID, actionList);
 					return true;
 				}
 			}
@@ -346,7 +356,46 @@ public class API {
 		return tempPing;
 	}
 	
-	//TODO actionREsults and error
+	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param results - array list of current action results
+	 * @return - true if sucessful write
+	 */
+	public boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
+		JSONArray resultsJson = new JSONArray();
+		JSONObject tempResult;
+		int length = results.size();
+		while(length > 0){
+			length --;
+			if((tempResult = makeResultJSON(results.get(length)))!=null)
+				resultsJson.put(tempResult);
+		}
+		if(writePlayer(status, "shipActionResults", (Object)resultsJson)) return true;
+		
+		return false;
+	}
+	
+	/**
+	 * @param result - the data of a given result
+	 * @return - a jsonobject containing said data
+	 */
+	private JSONObject makeResultJSON(ShipActionResult result)
+	{
+		JSONObject tempResult = new JSONObject();
+		
+		try {
+			tempResult.append("xCoord", result.xCoord);
+			tempResult.append("yCoord", result.yCoord);
+			tempResult.append("result", result.result);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tempResult;
+	}
+	
+	//TODO  error
 	/*
 	
 	public boolean writePlayerShipActions(int status, ArrayList<ActionReport> acts){
@@ -391,7 +440,26 @@ public class API {
 	 */
 	private boolean writePlayer(int status, String string, Object obj) {
 		// TODO Auto-generated method stub
-		return false;
+		try {
+			switch(status){
+				case 0: //append to player 1
+					player1.put(string, obj);
+					break;
+				case 1: //append to player 2
+					player2.put(string, obj);
+					break;
+				case 2: //append to both
+					player1.put(string, obj);
+					player2.put(string, obj);
+					break;
+				default: return false;
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -402,6 +470,7 @@ public class API {
 	 * @return - true if successful send
 	 */
 	public boolean send(int status, int PlayerID, String PlayerName, int resources){
+		//TODO send to server and clear local Json
 		return false;
 	}
 }

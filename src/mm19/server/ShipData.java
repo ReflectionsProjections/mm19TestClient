@@ -5,8 +5,8 @@ public class ShipData {
 	final public int ID;
 	final public String type;
 	final public int xCoord;
-	final  int yCoord;
-	final  String orientation;
+	final public int yCoord;
+	final public String orientation;
 	
 	public ShipData(int health, int ID, String type,int xCoord, int yCoord,String orientation){
 		this.health = health;
