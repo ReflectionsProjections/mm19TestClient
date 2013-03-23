@@ -17,6 +17,7 @@ public class Player {
     private static int nextPlayerID = 0;
 
     final private int playerID;
+    final private String playerName;
 
     private Board board = new Board();
     private int resources;
@@ -29,8 +30,21 @@ public class Player {
      * @param resources The Player's initial resources
      */
     public Player(int resources) {
+    	playerName = "";
         playerID = nextPlayerID;
         nextPlayerID++;
+        this.resources = resources;
+    }
+    
+    /**
+     * alternate Constructor
+     * Initializes the player's initial resources and gives them an empty board.
+     * takes in playerId and name as well as resources
+     * @param resources The Player's initial resources
+     */
+    public Player(int resources, int ID, String name) {
+    	playerName = name;
+        playerID = ID;
         this.resources = resources;
     }
 
