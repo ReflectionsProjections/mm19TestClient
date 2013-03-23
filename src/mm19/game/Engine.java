@@ -73,5 +73,16 @@ public class Engine{
 			
 		}
 	}
+	
+	/**
+	 * This function will check for victory conditions
+	 * Then return to the player the results
+	 * @param results
+	 * @param hits
+	 * @param sonar
+	 */
+	public void endofTurn(Player p, ArrayList<Result> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
+		
+	}
 
 }
