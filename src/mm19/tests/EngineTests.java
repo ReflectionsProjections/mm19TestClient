@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import mm19.game.Engine;
 import mm19.server.API;
-import org.mockito.Mockito.*;
+import static org.mockito.Mockito.*;
 
 public class EngineTests {
 		Engine testGame;
