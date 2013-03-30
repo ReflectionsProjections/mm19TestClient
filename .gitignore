@@ -1,0 +1,14 @@
+*.class
+.classpath
+
+# Package Files #
+*.jar
+*.war
+*.ear
+/bin
+/.settings
+
+# Intellji Files #
+/.idea
+MM19.iml
+MM19.eml
