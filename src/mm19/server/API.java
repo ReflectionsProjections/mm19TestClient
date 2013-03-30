@@ -361,7 +361,7 @@ public class API {
 	 * @param results - array list of current action results
 	 * @return - true if sucessful write
 	 */
-	private boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
+	public boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
 		JSONArray resultsJson = new JSONArray();
 		JSONObject tempResult;
 		int length = results.size();
@@ -438,7 +438,7 @@ public class API {
 	 * @param string - key to what we're writing
 	 * @param obj - object that we're writing
 	 */
-	public boolean writePlayer(int status, String string, Object obj) {
+	private boolean writePlayer(int status, String string, Object obj) {
 		// TODO Auto-generated method stub
 		try {
 			switch(status){
