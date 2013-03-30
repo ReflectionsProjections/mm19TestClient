@@ -179,7 +179,7 @@ public class API {
 	 * 				JSON object contains a valid Action, null otherwise
 	 */
 	private Action getAction(JSONObject obj) {
-		int actionID;
+		String actionID;
 		int shipID;
 		int actionXVar;
 		int actionYVar;
@@ -187,7 +187,7 @@ public class API {
 		
 		// TODO Auto-generated method stub
 		try {
-			if(obj.has("actionID") && (actionID = obj.getInt("actionID")) != 0){
+			if(obj.has("actionID") && (actionID = obj.getString("actionID")).isEmpty()){
 				if(obj.has("shipID") && (shipID = obj.getInt("shipID")) != 0){
 					if(obj.has("actionXVar") && obj.has("actionYVar")){
 						actionXVar = obj.getInt("actionXVar");
@@ -200,7 +200,7 @@ public class API {
 					}
 					else actionExtraVar = -1;
 					
-					return new Action(actionID, shipID, actionXVar, actionYVar, actionExtraVar);
+					return new Action(shipID, actionID, actionXVar, actionYVar, actionExtraVar);
 				}
 			}
 		} catch (JSONException e) {
