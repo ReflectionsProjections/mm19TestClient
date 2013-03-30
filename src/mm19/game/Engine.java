@@ -153,9 +153,9 @@ public class Engine{
 				case MOVE_Vertical:
 					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 					if(moveResponse2){
-						results.add("S");
+						results.add(new ShipActionResult(a.shipID, "S"));
 					} else{
-						results.add("R");
+						results.add(new ShipActionResult(a.shipID, "R"));
 						
 					}
 					break;
