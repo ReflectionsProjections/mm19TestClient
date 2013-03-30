@@ -13,6 +13,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONObject;
+
 public class Server {
 	// Static constant logger declaration
 	public static final Logger serverLog =
@@ -86,5 +88,16 @@ public class Server {
 			threadPool.execute(task);
 		}
 
+	}
+
+	public void sendPlayer(JSONObject player1, String authP1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void winCondition(String authP1) {
+		// TODO Auto-generated method stub
+		
+		
 	}
 }
