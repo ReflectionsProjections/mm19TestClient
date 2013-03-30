@@ -19,15 +19,18 @@ import mm19.server.ShipData;
 public class Engine{
 	private Player p1;
 	private Player p2;
-	private API api;
-	final private static int SHOOT = 0;
-	final private static int BURST_SHOT = 1;
-	final private static int SONAR = 2;
-	final private static int MOVE = 3;
+
+	final public static String SHOOT = "F";
+	final public static String BURST_SHOT = "BS";
+	final public static String SONAR = "S";
+	final public static String MOVE = "M";
+
 	final public static int DEFAULT_RESOURCES=100;
 	private static final String DESTROYER = "D";
 	private static final String MAINSHIP = "M";
 	private static final String PILOT = "P";
+	
+	private API api;
 
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
