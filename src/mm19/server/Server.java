@@ -94,4 +94,10 @@ public class Server {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public void winCondition(String authP1) {
+		// TODO Auto-generated method stub
+		
+		
+	}
 }
