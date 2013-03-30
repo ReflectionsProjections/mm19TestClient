@@ -27,13 +27,16 @@ public class Engine{
 	private static final String DESTROYER = "D";
 	private static final String MAINSHIP = "M";
 	private static final String PILOT = "P";
+	private API api;
 
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
 	 */
-    public Engine(){
+    public Engine(API api){
     	p1 = null;
     	p2 = null;
+    	this.api = api;
+    	
     }
 	
     /**
@@ -160,7 +163,7 @@ public class Engine{
 	public void endofTurn(Player p, ArrayList<String> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
 		if(!p1.isAlive() && !p2.isAlive()){
 			//Tie game (Is this even possible?)
-			API.writePlayer(2, "Winner", "Tie");
+			api.writePlayer(2, "Winner", "Tie");
 		} else if(!p1.isAlive()){
 			//Player 2 wins
 		} else if(!p2.isAlive()){
