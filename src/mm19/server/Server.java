@@ -5,6 +5,8 @@ package mm19.server;
  */
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +24,7 @@ public class Server {
 	public static final Logger serverLog =
 		Logger.getLogger(Server.class.getName());
 
-	// Server constants for now, configurability later
+	// Server constants for now, configurable later
 	public static final int PORT = 6969;
 	public static final int MAX_PLAYERS = 2;
 	public static final int MAX_THREADS = 8;
@@ -30,12 +32,14 @@ public class Server {
 	public static final Level LOG_LEVEL = Level.INFO;
 
 	// Server static variables
-
 	private static String[] playerToken;
 	private static RequestRunnable[] player;
 	private static ServerSocket socket = null;
 	private static ExecutorService threadPool = null;
 	private static boolean running = false;
+	private static ObjectInputStream in;
+	private static ObjectOutputStream out;
+	private static API mAPI;
 
 	public static void main(String[] args) {
 		// Set up the server, including logging and socket to listen on
@@ -54,9 +58,11 @@ public class Server {
 	}
 
 	private static boolean initServer() {
+		
+		mAPI = new API();
 		// TODO: Set up logging to a file
 		serverLog.setLevel(LOG_LEVEL);
-
+		
 		// Set up the socket
 		try {
 			socket = new ServerSocket(PORT);
@@ -86,6 +92,8 @@ public class Server {
 				
 				serverLog.log(Level.INFO, "Connection received");
 				
+				in = new ObjectInputStream(clientSocket.getInputStream());
+				
 				// Making sure we don't connect more than the max number of players.
 				if(playersConnected <= MAX_PLAYERS) {
 				 	serverLog.log(Level.INFO, "Players connected: " + ++playersConnected);
@@ -102,19 +110,20 @@ public class Server {
 			// Create a new task for the incoming connection and put it in the
 			// thread pool
 			
-			RequestRunnable task = new RequestRunnable(clientSocket);
+			RequestRunnable task = new RequestRunnable(clientSocket, mAPI);
 			threadPool.execute(task);
 		}
 
 	}
+	
 
-	public void sendPlayer(JSONObject player1, String authP1) {
+	public static void sendPlayer(JSONObject player1, String authP1) {
 		// TODO Auto-generated method stub
 
 		
 	}
 
-	public void winCondition(String authP1) {
+	public static void winCondition(String authP1) {
 		// TODO Auto-generated method stub
 		
 		
