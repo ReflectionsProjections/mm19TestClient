@@ -2,13 +2,13 @@ package mm19.game;
 
 import java.util.ArrayList;
 
-import mm19.game.board.Board;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
+import mm19.server.API;
 import mm19.server.ShipData;
 
 /**
@@ -99,25 +99,55 @@ public class Engine{
 		if(p==null){
 			//TODO: just got an invalid player ID
 		}
-		for(Action a: actions){ //TODO: check the return value of these functions, save to some type of array list
+		
+		Ability.gatherResources(p);
+		
+		ArrayList<String> results = new ArrayList<String>();
+		ArrayList<HitReport> hits = new ArrayList<HitReport>();
+		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
+		for(Action a: actions){
 			switch(a.actionID){
 				case SHOOT:
-					Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					if(hitResponse == null){
+						results.add("R");
+					} else{
+						results.add("S");
+						hits.add(hitResponse);
+					}
 					break;
 				case BURST_SHOT:
-					Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					if(burstResponse == null){
+						results.add("R");
+					} else{
+						results.add("S");
+						hits.addAll(burstResponse);
+					}
 					break;
 				case SONAR:
-					Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					if(sonarResponse == null){
+						results.add("R");
+					} else{
+						results.add("S");
+						pings.addAll(sonarResponse);
+					}
 					break;
 				case MOVE:
-					Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, p.getBoard().getShipPosition(a.shipID).orientation));
+					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, p.getBoard().getShipPosition(a.shipID).orientation));
+					if(moveResponse){
+						results.add("S");
+					} else{
+						results.add("R");
+						
+					}
 					break;
 				default:
 					break;
 			}
-			
 		}
+		endofTurn(p, results, hits, pings);
 	}
 	
 	/**
@@ -127,8 +157,27 @@ public class Engine{
 	 * @param hits
 	 * @param sonar
 	 */
-	public void endofTurn(Player p, ArrayList<Result> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
-		
+	public void endofTurn(Player p, ArrayList<String> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
+		if(!p1.isAlive() && !p2.isAlive()){
+			//Tie game (Is this even possible?)
+			API.writePlayer(2, "Winner", "Tie");
+		} else if(!p1.isAlive()){
+			//Player 2 wins
+		} else if(!p2.isAlive()){
+			//Player 1 wins
+		} else{
+			//Send data to both players
+			int player1, player2;
+			if(p1.getPlayerID()==p.getPlayerID()){
+				player1=0;
+				player2=1;
+			} else{
+				player1=1;
+				player2=0;
+			}
+			
+		}
+		//TODO: Should send some info to other player as well
 	}
 
 	public int getP1ID() {
