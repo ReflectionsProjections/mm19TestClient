@@ -19,14 +19,17 @@ import mm19.server.ShipData;
 public class Engine{
 	private Player p1;
 	private Player p2;
+
 	final public static String SHOOT = "F";
 	final public static String BURST_SHOT = "BS";
 	final public static String SONAR = "S";
 	final public static String MOVE = "M";
+
 	final public static int DEFAULT_RESOURCES=100;
 	private static final String DESTROYER = "D";
 	private static final String MAINSHIP = "M";
 	private static final String PILOT = "P";
+	
 	private API api;
 
 	/**
@@ -112,7 +115,7 @@ public class Engine{
 			switch(a.actionID){
 				case SHOOT:
 					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(hitResponse == null){
+					if(hitResponse == null){ //TODO: should have some way of knowing what error
 						results.add("R");
 					} else{
 						results.add("S");
@@ -128,7 +131,7 @@ public class Engine{
 						hits.addAll(burstResponse);
 					}
 					break;
-				case SONAR:
+				case SONAR: //TODO: Need a response for the other player as well?
 					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 					if(sonarResponse == null){
 						results.add("R");
@@ -163,11 +166,13 @@ public class Engine{
 	public void endofTurn(Player p, ArrayList<String> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
 		if(!p1.isAlive() && !p2.isAlive()){
 			//Tie game (Is this even possible?)
-			api.writePlayer(2, "Winner", "Tie");
+			//TODO: send win message
 		} else if(!p1.isAlive()){
 			//Player 2 wins
+			//TODO: send win message
 		} else if(!p2.isAlive()){
 			//Player 1 wins
+			//TODO: send win message
 		} else{
 			//Send data to both players
 			int player1, player2;
@@ -178,7 +183,10 @@ public class Engine{
 				player1=1;
 				player2=0;
 			}
-			
+			//api.writePlayerShips(player1, p.getBoard().getShips());
+			//api.writePlayerResults(player1, results);
+			api.writePlayerPings(player1, sonar);
+			api.writePlayerHits(player1, hits);
 		}
 		//TODO: Should send some info to other player as well
 	}

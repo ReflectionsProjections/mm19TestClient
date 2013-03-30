@@ -361,7 +361,7 @@ public class API {
 	 * @param results - array list of current action results
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
+	private boolean writePlayerResults(int status, ArrayList<ShipActionResult> results){
 		JSONArray resultsJson = new JSONArray();
 		JSONObject tempResult;
 		int length = results.size();
