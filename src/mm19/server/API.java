@@ -471,6 +471,26 @@ public class API {
 	 */
 	public boolean send(int status, int PlayerID, String PlayerName, int resources){
 		//TODO send to server and clear local Json
+		writePlayer(status, "PlayerID", PlayerID);
+		writePlayer(status, "PlayerName", PlayerName);
+		writePlayer(status, "resources", resources);
+		switch(status){
+			case 0: //send to player 1
+				//TODO send P1 to server
+				player1 = new JSONObject();
+				break;
+			case 1: //send to player 2
+				//TODO send P2 to server
+				player2 = new JSONObject();
+				break;
+			case 2: //append to both
+				//TODO send P1 to server
+				player1 = new JSONObject();
+				//TODO send P2 to server
+				player2 = new JSONObject();
+				break;
+			default: return false;
+		}
 		return false;
 	}
 }
