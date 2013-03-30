@@ -47,7 +47,7 @@ public class Engine{
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
 	 */
-	public int playerSet(ArrayList<ShipData> shipDatas, String playerName){//ArrayList<Ship> ships, ArrayList<Position> positions){
+	public int playerSet(ArrayList<ShipData> shipDatas, String playerName){//TODO: invalid input returns -1
 		
 		ArrayList<Ship> ships = new ArrayList<Ship>();
 		ArrayList<Position> positions = new ArrayList<Position>();
@@ -105,6 +105,7 @@ public class Engine{
 		}
 		if(p==null){
 			//TODO: just got an invalid player ID
+			return;
 		}
 		
 		Ability.gatherResources(p);
@@ -115,49 +116,47 @@ public class Engine{
 		for(Action a: actions){
 			switch(a.actionID){
 				case SHOOT:
-					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(hitResponse == null){ //TODO: should have some way of knowing what error occurred
-						results.add(new ShipActionResult(a.shipID, "R"));
-					} else{
+					try{
+						HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.add(hitResponse);
-					}
+					} catch(Exception e){
+						results.add(new ShipActionResult(a.shipID, e.getMessage()));
+					} 
 					break;
 				case BURST_SHOT:
-					ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(burstResponse == null){
-						results.add(new ShipActionResult(a.shipID, "R"));
-					} else{
+					try{
+						ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.addAll(burstResponse);
-					}
+					} catch(Exception e){
+						results.add(new ShipActionResult(a.shipID, e.getMessage()));
+					} 
 					break;
 				case SONAR: //TODO: Need a response for the other player as well?
-					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(sonarResponse == null){
-						results.add(new ShipActionResult(a.shipID, "R"));
-					} else{
+					try{
+						ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						pings.addAll(sonarResponse);
-					}
+					} catch(Exception e){
+						results.add(new ShipActionResult(a.shipID, e.getMessage()));
+					} 
 					break;
 				case MOVE_Horizontal:
-					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
-					if(moveResponse){
+					try{
+						boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} else{
-						results.add(new ShipActionResult(a.shipID, "R"));
-						
-					}
+					} catch(Exception e){
+						results.add(new ShipActionResult(a.shipID, e.getMessage()));
+					} 
 					break;
 				case MOVE_Vertical:
-					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
-					if(moveResponse2){
+					try{
+						boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} else{
-						results.add(new ShipActionResult(a.shipID, "R"));
-						
-					}
+					} catch(Exception e){
+						results.add(new ShipActionResult(a.shipID, e.getMessage()));
+					} 
 					break;
 				default:
 					break;
