@@ -57,7 +57,7 @@ public class Engine{
 				tempShip = new DestroyerShip();
 			}else if(tempType.equals(MAINSHIP)){
 				tempShip = new MainShip();
-			}else if(tempType.equals(MAINSHIP)){
+			}else if(tempType.equals(PILOT)){
 				tempShip = new PilotShip();
 			}
 			if(tempShip != null){
@@ -105,44 +105,44 @@ public class Engine{
 		
 		Ability.gatherResources(p);
 		
-		ArrayList<String> results = new ArrayList<String>();
+		ArrayList<ShipActionResult> results = new ArrayList<ShipActionResult>();
 		ArrayList<HitReport> hits = new ArrayList<HitReport>();
 		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
 		for(Action a: actions){
 			switch(a.actionID){
 				case SHOOT:
 					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(hitResponse == null){ //TODO: should have some way of knowing what error
-						results.add("R");
+					if(hitResponse == null){ //TODO: should have some way of knowing what error ocurred
+						results.add(new ShipActionResult(a.shipID, "R"));
 					} else{
-						results.add("S");
+						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.add(hitResponse);
 					}
 					break;
 				case BURST_SHOT:
 					ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 					if(burstResponse == null){
-						results.add("R");
+						results.add(new ShipActionResult(a.shipID, "R"));
 					} else{
-						results.add("S");
+						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.addAll(burstResponse);
 					}
 					break;
 				case SONAR: //TODO: Need a response for the other player as well?
 					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 					if(sonarResponse == null){
-						results.add("R");
+						results.add(new ShipActionResult(a.shipID, "R"));
 					} else{
-						results.add("S");
+						results.add(new ShipActionResult(a.shipID, "S"));
 						pings.addAll(sonarResponse);
 					}
 					break;
 				case MOVE:
 					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, p.getBoard().getShipPosition(a.shipID).orientation));
 					if(moveResponse){
-						results.add("S");
+						results.add(new ShipActionResult(a.shipID, "S"));
 					} else{
-						results.add("R");
+						results.add(new ShipActionResult(a.shipID, "R"));
 						
 					}
 					break;
@@ -160,7 +160,7 @@ public class Engine{
 	 * @param hits
 	 * @param sonar
 	 */
-	public void endofTurn(Player p, ArrayList<String> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
+	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
 		if(!p1.isAlive() && !p2.isAlive()){
 			//Tie game (Is this even possible?)
 			//TODO: send win message
@@ -180,8 +180,35 @@ public class Engine{
 				player1=1;
 				player2=0;
 			}
-			//api.writePlayerShips(player1, p.getBoard().getShips());
-			//api.writePlayerResults(player1, results);
+			ArrayList<ShipData> data=new ArrayList<ShipData>();
+			ArrayList<Ship> ships=p.getBoard().getShips();
+			Ship tempShip;
+			Position tempPos;
+			String tempType;
+			for(int i = 0; i < ships.size(); i++){
+				tempShip = ships.get(i);
+				tempType = null;
+				if(tempShip instanceof DestroyerShip){
+					tempType = DESTROYER;
+				}else if(tempShip instanceof MainShip){
+					tempType = MAINSHIP;
+				}else if(tempShip instanceof PilotShip){
+					tempType = PILOT;
+				}
+				String temporient="";
+				if(tempType != null){
+					if(p.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
+						temporient="H";
+					}else{
+						temporient="V";
+					}
+					tempPos=p.getBoard().getShipPosition(tempShip.getID());
+					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
+				}
+			}
+			
+			api.writePlayerShips(player1, data);
+			api.writePlayerResults(player1, results);
 			api.writePlayerPings(player1, sonar);
 			api.writePlayerHits(player1, hits);
 		}

@@ -384,8 +384,7 @@ public class API {
 		JSONObject tempResult = new JSONObject();
 		
 		try {
-			tempResult.append("xCoord", result.xCoord);
-			tempResult.append("yCoord", result.yCoord);
+			tempResult.append("ShipID", result.shipID);
 			tempResult.append("result", result.result);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
