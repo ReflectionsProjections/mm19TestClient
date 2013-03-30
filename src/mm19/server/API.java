@@ -25,17 +25,22 @@ public class API {
 	private JSONObject player2;
 	private int p1ID;
 	private int p2ID;
+	private String authP1;
+	private String authP2;	
 	private Engine game;
+	private Server server;
 	private final int MAX_SIZE = 100; // temporary holder variable move to constants
 	
-	public API(){
+	public API(Server parent){
 		p1ID = -1;
 		p2ID = -1;
 		player1 = new JSONObject();
 		player2 = new JSONObject();
+		server = parent;
+		game = new Engine(this);
 	}
 	
-	public boolean newData(JSONObject obj)
+	public boolean newData(JSONObject obj, String authToken)
 	{
 		int temp;
 		game = new Engine(this);
@@ -57,8 +62,14 @@ public class API {
 						if((ships = getShipList(shiparr)) != null){
 							ships.add(MainShip);
 							temp = game.playerSet(ships, playerName);
-							if(p1ID == -1) p1ID = temp;
-							else p2ID = temp;
+							if(p1ID == -1) {
+								p1ID = temp;
+								authP1 = authToken;
+							}
+							else{ 
+								p2ID = temp;
+								authP2 = authToken;
+							}
 							return true; 						
 						}
 					}
@@ -394,40 +405,6 @@ public class API {
 		return tempResult;
 	}
 	
-	//TODO  error
-	/*
-	
-	public boolean writePlayerShipActions(int status, ArrayList<ActionReport> acts){
-		//TODO write action results to json
-	}
-	
-	private JSONObject makeShipActionJSON(ActionReport act)
-	{
-		return null;
-	}
-	
-	//TODO error gen
-	// may be redundant
-	public boolean writePlayerErrors(int status, ArrayList<ErrorReport> errs){
-		//TODO write errors reports to json
-		return false;
-	}
-
-	private JSONObject makeErrJSON(SonarReport ping)
-	{
-		return null;
-	}
-	
-	
-	*/
-	
-	/*
-	public void intteruptTurn(int status)
-	{
-		//TODO talk to engine
-		
-	}
-	*/
 	//TODO turn interuppts
 	//TODO status enum creation
 	//TODO append to player json and cleaning
@@ -476,16 +453,20 @@ public class API {
 		switch(status){
 			case 0: //send to player 1
 				//TODO send P1 to server
+				server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
 				break;
 			case 1: //send to player 2
 				//TODO send P2 to server
+				server.sendPlayer(player2, authP2);
 				player2 = new JSONObject();
 				break;
 			case 2: //append to both
 				//TODO send P1 to server
+				server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
 				//TODO send P2 to server
+				server.sendPlayer(player2, authP2);
 				player2 = new JSONObject();
 				break;
 			default: return false;
