@@ -116,7 +116,7 @@ public class Engine{
 			switch(a.actionID){
 				case SHOOT:
 					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					if(hitResponse == null){ //TODO: should have some way of knowing what error ocurred
+					if(hitResponse == null){ //TODO: should have some way of knowing what error occurred
 						results.add(new ShipActionResult(a.shipID, "R"));
 					} else{
 						results.add(new ShipActionResult(a.shipID, "S"));
@@ -176,27 +176,28 @@ public class Engine{
 	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
 		if(!p1.isAlive() && !p2.isAlive()){
 			//Tie game (Is this even possible?)
-			//TODO: send win message
+			api.hasWon(p1.getPlayerID());
 		} else if(!p1.isAlive()){
 			//Player 2 wins
-			//TODO: send win message
-			api.send(1, p1.getPlayerID(), p1.getPlayerName(), p1.getResources());
+			api.hasWon(p1.getPlayerID());
 		} else if(!p2.isAlive()){
 			//Player 1 wins
-			//TODO: send win message
-			api.send(1, p2.getPlayerID(), p2.getPlayerName(), p2.getResources());
+			api.hasWon(p2.getPlayerID());
 		} else{
 			//Send data to both players
 			int player1, player2;
+			Player notp;
 			if(p1.getPlayerID()==p.getPlayerID()){
 				player1=0;
 				player2=1;
+				notp=p2;
 			} else{
 				player1=1;
 				player2=0;
+				notp=p1;
 			}
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
-			ArrayList<Ship> ships=p.getBoard().getShips();
+			ArrayList<Ship> ships=notp.getBoard().getShips();
 			Ship tempShip;
 			Position tempPos;
 			String tempType;
@@ -212,24 +213,24 @@ public class Engine{
 				}
 				String temporient="";
 				if(tempType != null){
-					if(p.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
+					if(notp.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
 						temporient="H";
 					}else{
 						temporient="V";
 					}
-					tempPos=p.getBoard().getShipPosition(tempShip.getID());
+					tempPos=notp.getBoard().getShipPosition(tempShip.getID());
 					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
 				}
 			}
 			
-			api.writePlayerShips(player1, data);
 			api.writePlayerResults(player1, results);
 			api.writePlayerPings(player1, sonar);
 			api.writePlayerHits(player1, hits);
-			api.send(player1, p.getPlayerID(), p.getPlayerName(), p.getResources());
-			//TODO: Should send some info to other player as well
+			//Send some info to the other player!
 			
-			
+			api.writePlayerShips(player2, data);
+			api.writePlayerEnemyHits(player2, hits);
+			api.send(player1, notp.getPlayerID(), notp.getPlayerName(), notp.getResources());
 		}
 	}
 
