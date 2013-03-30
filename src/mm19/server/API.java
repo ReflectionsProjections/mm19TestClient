@@ -125,7 +125,6 @@ public class API {
 		int yCoord;
 		String orientation;
 		
-		// TODO Auto-generated method stub
 		try {
 			if(obj.has("health") && (health = obj.getInt("health")) != 0)
 			{
@@ -196,7 +195,6 @@ public class API {
 		int actionYVar;
 		int actionExtraVar;
 		
-		// TODO Auto-generated method stub
 		try {
 			if(obj.has("actionID") && (actionID = obj.getString("actionID")).isEmpty()){
 				if(obj.has("shipID") && (shipID = obj.getInt("shipID")) != 0){
@@ -310,6 +308,24 @@ public class API {
 	}
 	
 	/**
+	 * @param status - enum that tells us to write to player1, player2 or both
+	 * @param hits - array list of current player hit reports
+	 * @return - true if sucessful write
+	 */
+	public boolean writePlayerEnemyHits(int status, ArrayList<HitReport> hits){
+		JSONArray hitsJson = new JSONArray();
+		JSONObject tempHit;
+		int length = hits.size();
+		while(length > 0){
+			length --;
+			if((tempHit = makeHitJSON(hits.get(length)))!=null)
+				hitsJson.put(tempHit);
+		}
+		if(writePlayer(status, "enemyHitReport", (Object)hitsJson)) return true;
+		return false;
+	}
+	
+	/**
 	 * @param report - the data of a given hitreport
 	 * @return - a jsonobject containing said data
 	 */
@@ -407,8 +423,6 @@ public class API {
 	
 	//TODO turn interuppts
 	//TODO status enum creation
-	//TODO append to player json and cleaning
-	//TODO Sending to server
 	/**
 	 * @param status - enum that tells us to write to player1, player2 or both
 	 * @param string - key to what we're writing
@@ -452,24 +466,31 @@ public class API {
 		writePlayer(status, "resources", resources);
 		switch(status){
 			case 0: //send to player 1
-				//TODO send P1 to server
 				server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
 				break;
 			case 1: //send to player 2
-				//TODO send P2 to server
 				server.sendPlayer(player2, authP2);
 				player2 = new JSONObject();
 				break;
 			case 2: //append to both
-				//TODO send P1 to server
 				server.sendPlayer(player1, authP1);
 				player1 = new JSONObject();
-				//TODO send P2 to server
 				server.sendPlayer(player2, authP2);
 				player2 = new JSONObject();
 				break;
 			default: return false;
+		}
+		return false;
+	}
+	
+	public boolean hasWon(int PlayerID){
+		if(PlayerID == p1ID){
+			server.winCondition(authP1);
+			return true;
+		} else if(PlayerID == p2ID){
+			server.winCondition(authP2);
+			return true;
 		}
 		return false;
 	}
