@@ -23,8 +23,9 @@ public class Engine{
 	final public static String SHOOT = "F";
 	final public static String BURST_SHOT = "BS";
 	final public static String SONAR = "S";
-	final public static String MOVE = "M";
-
+	final public static String MOVE_Horizontal = "MH";
+	final public static String MOVE_Vertical = "MV";
+	
 	final public static int DEFAULT_RESOURCES=100;
 	private static final String DESTROYER = "D";
 	private static final String MAINSHIP = "M";
@@ -140,9 +141,18 @@ public class Engine{
 						pings.addAll(sonarResponse);
 					}
 					break;
-				case MOVE:
-					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, p.getBoard().getShipPosition(a.shipID).orientation));
+				case MOVE_Horizontal:
+					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 					if(moveResponse){
+						results.add("S");
+					} else{
+						results.add("R");
+						
+					}
+					break;
+				case MOVE_Vertical:
+					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
+					if(moveResponse2){
 						results.add("S");
 					} else{
 						results.add("R");
