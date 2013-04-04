@@ -48,14 +48,14 @@ public class API {
 		ArrayList<ShipData> ships;
 		
 		try {
-			if(obj.has("PlayerName") && 
-					((playerName = obj.getString("PlayerName")) != null) )
+			if(obj.has("playerName") && 
+					((playerName = obj.getString("playerName")) != null) )
 			{
 				if(obj.has("mainShip") && 
-						((MainShip = getShip((JSONObject)obj.get("MainShip"))) != null))
+						((MainShip = getShip((JSONObject)obj.get("mainShip"))) != null))
 				{
-					if(obj.has("Ships") && 
-							((shiparr = (JSONArray)obj.get("Ships")) != null))
+					if(obj.has("ships") && 
+							((shiparr = (JSONArray)obj.get("ships")) != null))
 					{
 						if((ships = getShipList(shiparr)) != null){
 							ships.add(MainShip);
