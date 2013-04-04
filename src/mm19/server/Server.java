@@ -108,7 +108,7 @@ public class Server {
 	}
 
 	private static void run() {
-		int currPlayerID;
+		int currPlayerID = -1;
 		serverLog.log(Level.INFO, "Starting server run loop");
 		running = true;
 		
@@ -173,9 +173,10 @@ public class Server {
 			}
 			// Create a new task for the incoming connection and put it in the
 			// thread pool
-			
-			RequestRunnable task = new RequestRunnable(clientSocket, mAPI);
-			threadPool.execute(task);
+			if(currPlayerID != -1) {
+				RequestRunnable task = new RequestRunnable(clientSocket, mAPI, playerToken[currPlayerID]);
+				threadPool.execute(task);
+			}
 		}
 
 	}
@@ -189,7 +190,7 @@ public class Server {
 		return -1;
 	}
 	
-	private static int disconnectPlayer(String token) {
+	public static int disconnectPlayer(String token) {
 		if(encrypt(playerToken[0]).compareTo(token) == 0) {
 			connected[0] = false;
 			clientSockets[0] = null;
@@ -251,6 +252,10 @@ public class Server {
 	public static void winCondition(String authP1) {
 		// TODO Auto-generated method stub
 		
+		
+	}
+	
+	public static synchronized void sendAPI() {
 		
 	}
 }
