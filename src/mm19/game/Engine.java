@@ -53,7 +53,7 @@ public class Engine{
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
 	 */
-	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){//TODO: invalid input returns -1
+	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){
 		
 		ArrayList<Ship> ships = new ArrayList<Ship>();
 		ArrayList<Position> positions = new ArrayList<Position>();
@@ -208,19 +208,19 @@ public class Engine{
 			api.hasWon(p2.getPlayerID());
 		} else{
 			//Send data to both players
-			int player1, player2;
-			Player notp;
+			int currPlayerID, opponentID;
+			Player opponent;
 			if(p1.getPlayerID()==p.getPlayerID()){
-				player1=0;
-				player2=1;
-				notp=p2;
+				currPlayerID=0;
+				opponentID=1;
+				opponent=p2;
 			} else{
-				player1=1;
-				player2=0;
-				notp=p1;
+				currPlayerID=1;
+				opponentID=0;
+				opponent=p1;
 			}
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
-			ArrayList<Ship> ships=notp.getBoard().getShips();
+			ArrayList<Ship> ships=opponent.getBoard().getShips();
 			Ship tempShip;
 			Position tempPos;
 			String tempType;
@@ -234,26 +234,26 @@ public class Engine{
 				}else if(tempShip instanceof PilotShip){
 					tempType = PILOT;
 				}
-				String temporient="";
+				String tempOrient="";
 				if(tempType != null){
-					if(notp.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
-						temporient="H";
+					if(opponent.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
+						tempOrient="H";
 					}else{
-						temporient="V";
+						tempOrient="V";
 					}
-					tempPos=notp.getBoard().getShipPosition(tempShip.getID());
-					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
+					tempPos=opponent.getBoard().getShipPosition(tempShip.getID());
+					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
 			
-			api.writePlayerResults(player1, results);
-			api.writePlayerPings(player1, sonar);
-			api.writePlayerHits(player1, hits);
+			api.writePlayerResults(currPlayerID, results);
+			api.writePlayerPings(currPlayerID, sonar);
+			api.writePlayerHits(currPlayerID, hits);
 			//Send some info to the other player!
 			
-			api.writePlayerShips(player2, data);
-			api.writePlayerEnemyHits(player2, hits);
-			api.send(player1, notp.getPlayerID(), notp.getPlayerName(), notp.getResources());
+			api.writePlayerShips(opponentID, data);
+			api.writePlayerEnemyHits(opponentID, hits);
+			api.send(currPlayerID, opponent.getPlayerID(), opponent.getPlayerName(), opponent.getResources());
 		}
 	}
 
