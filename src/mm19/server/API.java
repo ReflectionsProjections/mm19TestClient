@@ -74,7 +74,7 @@ public class API {
                         }
     
                         ships.add(mainShip);
-                        temp = game.playerSet(ships, playerName);
+                        if((temp = game.playerSet(ships, playerName)) == -1) return false;
                         if (p1ID == -1) {
                             p1ID = temp;
                             authP1 = authToken;
@@ -89,7 +89,6 @@ public class API {
 
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -118,7 +117,6 @@ public class API {
             }
 
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return false;
@@ -168,7 +166,6 @@ public class API {
             }
 
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -215,7 +212,6 @@ public class API {
                 }
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -244,7 +240,6 @@ public class API {
                 if ((tempShip = getShip(tempJson)) != null)
                     list.add(tempShip);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -285,7 +280,6 @@ public class API {
                 }
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -312,7 +306,6 @@ public class API {
                 if ((tempAction = getAction(tempJson)) != null)
                     list.add(tempAction);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -357,7 +350,6 @@ public class API {
             tempShip.append("yCoord", data.yCoord);
             tempShip.append("orientation", data.orientation);
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
@@ -419,7 +411,6 @@ public class API {
             tempHit.append("hit", report.shotSuccessful);
 
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
@@ -460,7 +451,6 @@ public class API {
             tempPing.append("distance", ping.dist);
             tempPing.append("shipID", ping.ship.getID());
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
@@ -502,7 +492,6 @@ public class API {
             tempResult.append("ShipID", result.shipID);
             tempResult.append("result", result.result);
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
@@ -520,7 +509,6 @@ public class API {
      *            - object that we're writing
      */
     private boolean writePlayer(int status, String string, Object obj) {
-        // TODO Auto-generated method stub
         try {
             switch (status) {
             case 0: // append to player 1
@@ -537,7 +525,6 @@ public class API {
                 return false;
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return false;
         }
@@ -562,28 +549,22 @@ public class API {
         writePlayer(status, "PlayerName", PlayerName);
         writePlayer(status, "resources", resources);
         switch (status) {
-        case 0: // send to player 1
-
-            // TODO send P1 to server
-            Server.sendPlayer(player1, authP1);
-            player1 = new JSONObject();
-            break;
-        case 1: // send to player 2
-            // TODO send P2 to server
-            Server.sendPlayer(player2, authP2);
-            player2 = new JSONObject();
-            break;
-        case 2: // append to both
-            // TODO send P1 to server
-            Server.sendPlayer(player1, authP1);
-            player1 = new JSONObject();
-            // TODO send P2 to server
-            Server.sendPlayer(player2, authP2);
-
-            player2 = new JSONObject();
-            break;
-        default:
-            return false;
+            case 0: // send to player 1
+                Server.sendPlayer(player1, authP1);
+                player1 = new JSONObject();
+                break;
+            case 1: // send to player 2
+                Server.sendPlayer(player2, authP2);
+                player2 = new JSONObject();
+                break;
+            case 2: // append to both
+                Server.sendPlayer(player1, authP1);
+                player1 = new JSONObject();
+                Server.sendPlayer(player2, authP2);    
+                player2 = new JSONObject();
+                break;
+            default:
+                return false;
         }
         return false;
     }
