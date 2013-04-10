@@ -31,9 +31,9 @@ public class Engine{
 	final public static int MAXSHIPS =5;
 	final public static int DEFAULT_RESOURCES=100;
 	
-	private static final String DESTROYER = "D";
-	private static final String MAINSHIP = "M";
-	private static final String PILOT = "P";
+	public static final String DESTROYER = "D";
+	public static final String MAINSHIP = "M";
+	public static final String PILOT = "P";
 	
 	private static HashMap<String, Integer> tokenMap;
 	
@@ -53,6 +53,7 @@ public class Engine{
     /**
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
+	 * returns -1 on bad imput
 	 */
 	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){
 		
@@ -63,7 +64,7 @@ public class Engine{
 		Position tempPos;
 		String tempType;
 		
-		for(int i = 0; i < Math.max(shipDatas.size(), MAXSHIPS); i++){
+		for(int i = 0; i < Math.min(shipDatas.size(), MAXSHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
 			if(tempType.equals(DESTROYER)){
