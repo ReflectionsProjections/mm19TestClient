@@ -62,15 +62,21 @@ public class API {
 						if((ships = getShipList(shiparr)) != null){
 							ships.add(MainShip);
 							temp = game.playerSet(ships, playerName);
-							if(p1ID == -1) {
-								p1ID = temp;
-								authP1 = authToken;
+							if(temp == -1){
+								return false;
 							}
-							else{ 
-								p2ID = temp;
-								authP2 = authToken;
+							else{
+								if(p1ID == -1) {
+									p1ID = temp;
+									authP1 = authToken;
+								}
+								else{ 
+									p2ID = temp;
+									authP2 = authToken;
+								}
+								return true; 
 							}
-							return true; 						
+							
 						}
 					}
 				}
