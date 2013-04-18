@@ -12,6 +12,7 @@ import java.util.Collection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 public class Requester implements Runnable{
 	private Socket requestSocket;
 	private BufferedReader in;
@@ -21,10 +22,12 @@ public class Requester implements Runnable{
 	
 	Requester(String pn) {
 		playerName = pn;
+
 	}
 	
 	public boolean connectToServer() {
 		try {
+
 			
 			System.out.println(playerName + " is trying to connect to the server.");
 			requestSocket = new Socket("localhost", 6969);
@@ -90,6 +93,7 @@ public class Requester implements Runnable{
 		try {
 			requestSocket = new Socket("localhost", 6969);
 			System.out.println("Connected to server!");
+
 		}
 		catch(UnknownHostException e) {
 			e.printStackTrace();
