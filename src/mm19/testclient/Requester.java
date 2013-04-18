@@ -27,9 +27,8 @@ public class Requester implements Runnable{
 	
 	public boolean connectToServer() {
 		try {
-
-			
 			System.out.println(playerName + " is trying to connect to the server.");
+
 			requestSocket = new Socket("localhost", 6969);
 			System.out.println(playerName + " connected!");
 			
@@ -70,6 +69,9 @@ public class Requester implements Runnable{
 			System.out.println(message);
 			
 			out.println(message);
+			
+			String s = in.readLine();
+			System.out.println(s);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
