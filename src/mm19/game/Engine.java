@@ -81,7 +81,7 @@ public class Engine{
 				}
 				
 				ships.add(tempShip);
-				positions.add(tempPos);
+				positions.add(tempPos); 
 			}
 		}
 		

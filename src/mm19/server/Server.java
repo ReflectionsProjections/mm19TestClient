@@ -144,6 +144,7 @@ public class Server {
 						connected[currPlayerID] = true;
 						boolean successfullyAdded = API.newData(obj, encrypt(name));
 						if(successfullyAdded) {
+
 							serverLog.log(Level.INFO, "Successfully initialized player!");
 						}
 						else {
