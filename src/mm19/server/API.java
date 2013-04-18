@@ -8,6 +8,9 @@ import mm19.game.Engine;
 import mm19.game.HitReport;
 import mm19.game.SonarReport;
 import mm19.game.ShipActionResult;
+import mm19.game.ships.DestroyerShip;
+import mm19.game.ships.MainShip;
+import mm19.game.ships.PilotShip;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,28 +26,29 @@ import org.json.JSONObject;
  */
 public class API {
 
-	private JSONObject player1;
-	private JSONObject player2;
-	private int p1ID;
-	private int p2ID;
-	private String authP1;
-	private String authP2;
-	private Engine game;
-	private int ID = 0;
-	private final int MAX_SIZE = 100; // temporary holder variable move to
+	private static JSONObject[] playerTurnObj;
+	private static String[] playerToken;
+	private static Engine game;
+	private static int ID = 0;
+	private static final int MAX_SIZE = 100; // temporary holder variable move to
 										// constants
 
-	public API() {
-		p1ID = -1;
-		p2ID = -1;
-		player1 = new JSONObject();
-		player2 = new JSONObject();
-		game = new Engine(this);
+	public static boolean initAPI() {
+		playerTurnObj = new JSONObject[2];
+		playerTurnObj[0] = new JSONObject();
+		playerTurnObj[1] = new JSONObject();
+		
+		playerToken = new String[2];
+		playerToken[0] = "";
+		playerToken[1] = "";
+		
+		game = new Engine();
+		return true;
 	}
 
-	public boolean newData(JSONObject obj, String authToken) {
-		int temp;
-		game = new Engine(this);
+	public static boolean newData(JSONObject obj, String authToken) {
+		int playerID;
+		game = new Engine();
 		String playerName;
 		JSONObject mainShipObj;
 		ShipData mainShip;
@@ -74,14 +78,14 @@ public class API {
 						}
 	
 						ships.add(mainShip);
-						temp = game.playerSet(ships, playerName);
-						if (p1ID == -1) {
-							p1ID = temp;
-							authP1 = authToken;
-						} else {
-							p2ID = temp;
-							authP2 = authToken;
+						playerID = game.playerSet(ships, playerName);
+						
+						if(playerID == -1) {
+							return false;
 						}
+						
+						playerToken[playerID] = authToken;
+						
 						return true;
 
 					}
@@ -89,7 +93,6 @@ public class API {
 
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -97,9 +100,9 @@ public class API {
 
 	}
 
-	public boolean decodeTurn(JSONObject obj) {
+	public static boolean decodeTurn(JSONObject obj) {
 		// sanity check
-		if (p1ID == -1 || p2ID == -1) {
+		if (playerToken[0].equals("") || playerToken[1].equals("")) {
 			return false;
 		}
 		
@@ -118,13 +121,12 @@ public class API {
 			}
 
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
 	}
 
-	private ShipData initShip(JSONObject obj) {
+	private static ShipData initShip(JSONObject obj) {
 		int health;
 		String type;
 		int xCoord;
@@ -148,13 +150,13 @@ public class API {
 							// Success
 							health = -1;
 							if(type.equals("P")) {
-								health = Ability.MISSILE_DAMAGE * 2;
+								health = PilotShip.HEALTH;
 							}
 							else if(type.equals("D")) {
-								health = Ability.MISSILE_DAMAGE * 4;
+								health = DestroyerShip.HEALTH;
 							}
 							else if(type.equals("M")) {
-								health = Ability.MISSILE_DAMAGE * 6;
+								health = MainShip.HEALTH;
 							}
 							
 							if(health == -1)
@@ -168,7 +170,6 @@ public class API {
 			}
 
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -182,7 +183,7 @@ public class API {
 	 * @return returns a valid ship if the given JSONObject contains such, null
 	 *         otherwise
 	 */
-	private ShipData getShip(JSONObject obj) {
+	private static ShipData getShip(JSONObject obj) {
 		int health;
 		int ID;
 		String type;
@@ -215,7 +216,6 @@ public class API {
 				}
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -229,7 +229,7 @@ public class API {
 	 *         JSONArray contains such, any error will cause this function
 	 *         return null
 	 */
-	private ArrayList<ShipData> getShipList(JSONArray jsonArray) {
+	private static ArrayList<ShipData> getShipList(JSONArray jsonArray) {
 
 		if (jsonArray.length() != 19)
 			return null;
@@ -244,7 +244,6 @@ public class API {
 				if ((tempShip = getShip(tempJson)) != null)
 					list.add(tempShip);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -258,7 +257,7 @@ public class API {
 	 * @return - returns the associated Action in the given JSON object contains
 	 *         a valid Action, null otherwise
 	 */
-	private Action getAction(JSONObject obj) {
+	private static Action getAction(JSONObject obj) {
 		String actionID;
 		int shipID;
 		int actionXVar;
@@ -285,7 +284,6 @@ public class API {
 				}
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -298,7 +296,7 @@ public class API {
 	 * @return returns the valid List of Actions if the given JSONarray contains
 	 *         such, and null otherwise
 	 */
-	private ArrayList<Action> getActionList(JSONArray jsonArray) {
+	private static ArrayList<Action> getActionList(JSONArray jsonArray) {
 		if (jsonArray.length() != 19)
 			return null;
 		int length = jsonArray.length();
@@ -312,7 +310,6 @@ public class API {
 				if ((tempAction = getAction(tempJson)) != null)
 					list.add(tempAction);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -327,7 +324,7 @@ public class API {
 	 *            - array list of current player ships/status
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
+	public static boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
 		JSONArray shipsJson = new JSONArray();
 		JSONObject tempShip;
 		int length = ships.size();
@@ -346,18 +343,17 @@ public class API {
 	 *            - the data of a given ship
 	 * @return - a jsonobject containing said data
 	 */
-	private JSONObject makeShipJSON(ShipData data) {
+	private static JSONObject makeShipJSON(ShipData data) {
 		JSONObject tempShip = new JSONObject();
 
 		try {
-			tempShip.append("health", data.health);
-			tempShip.append("ID", data.ID);
-			tempShip.append("type", data.type);
-			tempShip.append("xCoord", data.xCoord);
-			tempShip.append("yCoord", data.yCoord);
-			tempShip.append("orientation", data.orientation);
+			tempShip.put("health", data.health);
+			tempShip.put("ID", data.ID);
+			tempShip.put("type", data.type);
+			tempShip.put("xCoord", data.xCoord);
+			tempShip.put("yCoord", data.yCoord);
+			tempShip.put("orientation", data.orientation);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -371,7 +367,7 @@ public class API {
 	 *            - array list of current player hit reports
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerHits(int status, ArrayList<HitReport> hits) {
+	public static boolean writePlayerHits(int status, ArrayList<HitReport> hits) {
 		JSONArray hitsJson = new JSONArray();
 		JSONObject tempHit;
 		int length = hits.size();
@@ -392,7 +388,7 @@ public class API {
 	 *            - array list of current player hit reports
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerEnemyHits(int status, ArrayList<HitReport> hits) {
+	public static boolean writePlayerEnemyHits(int status, ArrayList<HitReport> hits) {
 		JSONArray hitsJson = new JSONArray();
 		JSONObject tempHit;
 		int length = hits.size();
@@ -411,15 +407,14 @@ public class API {
 	 *            - the data of a given hitreport
 	 * @return - a jsonobject containing said data
 	 */
-	private JSONObject makeHitJSON(HitReport report) {
+	private static JSONObject makeHitJSON(HitReport report) {
 		JSONObject tempHit = new JSONObject();
 		try {
-			tempHit.append("xCoord", report.x);
-			tempHit.append("yCoord", report.y);
-			tempHit.append("hit", report.shotSuccessful);
+			tempHit.put("xCoord", report.x);
+			tempHit.put("yCoord", report.y);
+			tempHit.put("hit", report.shotSuccessful);
 
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -433,7 +428,7 @@ public class API {
 	 *            - array list of current player pings
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerPings(int status, ArrayList<SonarReport> pings) {
+	public static boolean writePlayerPings(int status, ArrayList<SonarReport> pings) {
 		JSONArray pingsJson = new JSONArray();
 		JSONObject tempPing;
 		int length = pings.size();
@@ -453,14 +448,13 @@ public class API {
 	 *            - the data of a given ping
 	 * @return - a jsonobject containing said data
 	 */
-	private JSONObject makePingJSON(SonarReport ping) {
+	private static JSONObject makePingJSON(SonarReport ping) {
 		JSONObject tempPing = new JSONObject();
 
 		try {
 			tempPing.append("distance", ping.dist);
 			tempPing.append("shipID", ping.ship.getID());
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -474,7 +468,7 @@ public class API {
 	 *            - array list of current action results
 	 * @return - true if sucessful write
 	 */
-	public boolean writePlayerResults(int status,
+	public static boolean writePlayerResults(int status,
 			ArrayList<ShipActionResult> results) {
 		JSONArray resultsJson = new JSONArray();
 		JSONObject tempResult;
@@ -495,14 +489,13 @@ public class API {
 	 *            - the data of a given result
 	 * @return - a jsonobject containing said data
 	 */
-	private JSONObject makeResultJSON(ShipActionResult result) {
+	private static JSONObject makeResultJSON(ShipActionResult result) {
 		JSONObject tempResult = new JSONObject();
 
 		try {
 			tempResult.append("ShipID", result.shipID);
 			tempResult.append("result", result.result);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -519,25 +512,24 @@ public class API {
 	 * @param obj
 	 *            - object that we're writing
 	 */
-	private boolean writePlayer(int status, String string, Object obj) {
-		// TODO Auto-generated method stub
+	private static boolean writePlayer(int status, String string, Object obj) {
+		
 		try {
 			switch (status) {
 			case 0: // append to player 1
-				player1.put(string, obj);
+				playerTurnObj[status].put(string, obj);
 				break;
 			case 1: // append to player 2
-				player2.put(string, obj);
+				playerTurnObj[status].put(string, obj);
 				break;
 			case 2: // append to both
-				player1.put(string, obj);
-				player2.put(string, obj);
+				playerTurnObj[0].put(string, obj);
+				playerTurnObj[1].put(string, obj);
 				break;
 			default:
 				return false;
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
@@ -555,45 +547,48 @@ public class API {
 	 *            - given Player's remaining resources
 	 * @return - true if successful send
 	 */
-	public boolean send(int status, int PlayerID, String PlayerName,
+	public static boolean send(int status, int PlayerID, String PlayerName,
 			int resources) {
-		// TODO send to server and clear local Json
+		
 		writePlayer(status, "PlayerID", PlayerID);
 		writePlayer(status, "PlayerName", PlayerName);
 		writePlayer(status, "resources", resources);
+		
 		switch (status) {
-		case 0: // send to player 1
-
-			// TODO send P1 to server
-			Server.sendPlayer(player1, authP1);
-			player1 = new JSONObject();
+		// send to player 1
+		case 0: 
+			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
+			playerTurnObj[status] = new JSONObject();
 			break;
-		case 1: // send to player 2
-			// TODO send P2 to server
-			Server.sendPlayer(player2, authP2);
-			player2 = new JSONObject();
+			
+		// send to player 2	
+		case 1: 
+			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
+			playerTurnObj[status] = new JSONObject();
 			break;
-		case 2: // append to both
-			// TODO send P1 to server
-			Server.sendPlayer(player1, authP1);
-			player1 = new JSONObject();
-			// TODO send P2 to server
-			Server.sendPlayer(player2, authP2);
-
-			player2 = new JSONObject();
+			
+		// append to both
+		case 2: 
+			Server.sendPlayer(playerTurnObj[0], playerToken[0]);
+			playerTurnObj[0] = new JSONObject();
+			Server.sendPlayer(playerTurnObj[1], playerToken[1]);
+			playerTurnObj[1] = new JSONObject();
 			break;
+			
 		default:
 			return false;
+			
 		}
-		return false;
+		
+		return true;
 	}
 
-	public boolean hasWon(int PlayerID) {
-		if (PlayerID == p1ID) {
-			Server.winCondition(authP1);
+	public static boolean hasWon(int PlayerID) {
+		if (PlayerID == 0) {
+			Server.winCondition(playerToken[0]);
 			return true;
-		} else if (PlayerID == p2ID) {
-			Server.winCondition(authP2);
+		} else if (PlayerID == 1) {
+			Server.winCondition(playerToken[1]);
 			return true;
 		}
 		return false;

@@ -49,9 +49,6 @@ public class Server {
 	private static BufferedReader in;
 	private static PrintWriter out;
 	
-	// The API
-	private static API mAPI;
-	
 	// Security
 	private static String[] playerToken;
 	private static StandardPBEStringEncryptor pbe;
@@ -59,6 +56,8 @@ public class Server {
 	public static void main(String[] args) {
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+		success = API.initAPI();
+		
 		if (!success) {
 			serverLog.log(Level.SEVERE,
 					"Fatal error: unable to start server. Bailing out.");
@@ -73,7 +72,6 @@ public class Server {
 
 	private static boolean initServer() {
 		
-		mAPI = new API();
 		clientSockets = new Socket[2];
 		
 		playerToken = new String[2];
@@ -144,7 +142,7 @@ public class Server {
 						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
 						playerToken[currPlayerID] = name;
 						
-						if(mAPI.newData(obj, encrypt(name))) {
+						if(API.newData(obj, encrypt(name))) {
 							serverLog.log(Level.INFO, "Successfully initialized player!");
 						}
 						else {
@@ -158,8 +156,17 @@ public class Server {
 					serverLog.log(Level.WARNING, "Player didn't have playerName, couldn't authenticate");
 					serverLog.log(Level.INFO, "Notifying and Disconnecting player");
 					
-					//TODO: Make this more formal
-					out.println("You need to include \"playerName\" with your team name so we can authenticate you.");
+					JSONObject ret = new JSONObject();
+					
+					try {
+						ret.put("responseCode", 400);
+						ret.put("playerToken", playerToken[currPlayerID]);
+						ret.append("error", "You need to include \"playerName\" with your team name so we can authenticate you.");
+						out.println(ret.toString());
+					} catch (JSONException e1) {
+						e1.printStackTrace();
+					}
+					
 					out.flush();
 					disconnectPlayer(playerToken[currPlayerID]);
 					//Drop the client because he had bad data.
@@ -180,7 +187,7 @@ public class Server {
 			// Create a new task for the incoming connection and put it in the
 			// thread pool
 			if(currPlayerID != -1) {
-				RequestRunnable task = new RequestRunnable(clientSocket, mAPI, playerToken[currPlayerID]);
+				RequestRunnable task = new RequestRunnable(clientSocket, playerToken[currPlayerID]);
 				threadPool.execute(task);
 			}
 		}
@@ -248,14 +255,13 @@ public class Server {
 		return pbe.encrypt(s);
 	}
 	
-	public static void sendPlayer(JSONObject player1, String authP1) {
+	public static synchronized void sendPlayer(JSONObject player1, String authP1) {
 		// Authenticate the player.
 		int playerID = authenticate(authP1);
 		
 		if(playerID == -1) {
 			serverLog.log(Level.WARNING, "Couldn't authenticate player when trying to send a message");
 			return;
-			
 		}
 		
 		try {
@@ -276,6 +282,6 @@ public class Server {
 	}
 	
 	public static synchronized void sendAPI(JSONObject obj) {
-		mAPI.decodeTurn(obj);
+		API.decodeTurn(obj);
 	}
 }

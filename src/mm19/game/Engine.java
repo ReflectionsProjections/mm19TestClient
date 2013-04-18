@@ -36,16 +36,12 @@ public class Engine{
 	private static final String PILOT = "P";
 	
 	private static HashMap<String, Integer> tokenMap;
-	
-	private API api;
-
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
 	 */
-    public Engine(API api){
+    public Engine(){
     	p1 = null;
     	p2 = null;
-    	this.api = api;
     	tokenMap = new HashMap<String, Integer>();
     }
 	
@@ -199,13 +195,13 @@ public class Engine{
 	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
 		if(!p1.isAlive() && !p2.isAlive()){
 			//Tie game (Is this even possible?)
-			api.hasWon(p1.getPlayerID());
+			API.hasWon(p1.getPlayerID());
 		} else if(!p1.isAlive()){
 			//Player 2 wins
-			api.hasWon(p1.getPlayerID());
+			API.hasWon(p1.getPlayerID());
 		} else if(!p2.isAlive()){
 			//Player 1 wins
-			api.hasWon(p2.getPlayerID());
+			API.hasWon(p2.getPlayerID());
 		} else{
 			//Send data to both players
 			int player1, player2;
@@ -246,14 +242,14 @@ public class Engine{
 				}
 			}
 			
-			api.writePlayerResults(player1, results);
-			api.writePlayerPings(player1, sonar);
-			api.writePlayerHits(player1, hits);
+			API.writePlayerResults(player1, results);
+			API.writePlayerPings(player1, sonar);
+			API.writePlayerHits(player1, hits);
 			//Send some info to the other player!
 			
-			api.writePlayerShips(player2, data);
-			api.writePlayerEnemyHits(player2, hits);
-			api.send(player1, notp.getPlayerID(), notp.getPlayerName(), notp.getResources());
+			API.writePlayerShips(player2, data);
+			API.writePlayerEnemyHits(player2, hits);
+			API.send(player1, notp.getPlayerID(), notp.getPlayerName(), notp.getResources());
 		}
 	}
 
