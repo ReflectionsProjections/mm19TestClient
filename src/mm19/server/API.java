@@ -28,6 +28,7 @@ public class API {
 
 	private static JSONObject[] playerTurnObj;
 	private static String[] playerToken;
+	private static String[] playerName;
 	private static Engine game;
 	private static int ID = 0;
 	private static final int MAX_SIZE = 100; // temporary holder variable move to
@@ -42,11 +43,15 @@ public class API {
 		playerToken[0] = "";
 		playerToken[1] = "";
 		
+		playerName = new String[2];
+		playerName[0] = "";
+		playerName[1] = "";
+		
 		game = new Engine();
 		return true;
 	}
 
-	public static boolean newData(JSONObject obj, String authToken) {
+	public static boolean newData(JSONObject obj, String playerToken) {
 		int playerID;
 		game = new Engine();
 		String playerName;
@@ -84,14 +89,21 @@ public class API {
 							return false;
 						}
 						
-						playerToken[playerID] = authToken;
+						API.playerName[playerID] = playerName;
+						API.playerToken[playerID] = playerToken;
+						
+						writePlayer(playerID, "playerToken", playerToken);
+						writePlayer(playerID, "playerName", playerName);
+						writePlayer(playerID, "shipActionResults", new JSONArray());
+						writePlayer(playerID, "hitReport", new JSONArray());
+						writePlayer(playerID, "pingReport", new JSONArray());
+						send(playerID);
 						
 						return true;
-
 					}
 				}
-
 			}
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -359,6 +371,10 @@ public class API {
 		}
 		return tempShip;
 	}
+	
+	public static boolean writePlayerResources(int status, int resources) {
+		return writePlayer(status, "resources", status);
+	}
 
 	/**
 	 * @param status
@@ -539,20 +555,11 @@ public class API {
 	/**
 	 * @param status
 	 *            - enum that tells us to write to player1, player2 or both
-	 * @param PlayerID
-	 *            - given Player's ID
-	 * @param PlayerName
-	 *            - given Player's Name
 	 * @param resources
 	 *            - given Player's remaining resources
 	 * @return - true if successful send
 	 */
-	public static boolean send(int status, int PlayerID, String PlayerName,
-			int resources) {
-		
-		writePlayer(status, "PlayerID", PlayerID);
-		writePlayer(status, "PlayerName", PlayerName);
-		writePlayer(status, "resources", resources);
+	public static boolean send(int status) {
 		
 		switch (status) {
 		// send to player 1
