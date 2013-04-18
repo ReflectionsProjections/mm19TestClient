@@ -3,6 +3,7 @@ package mm19.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import mm19.exceptions.EngineException;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
@@ -19,8 +20,7 @@ import mm19.server.ShipData;
  * This will put all the pieces of the game together, and actually make things run.
  */
 public class Engine{
-	private Player p1;
-	private Player p2;
+	private Player[] players;
 
 	public static final String SHOOT = "F";
 	public static final String BURST_SHOT = "BS";
@@ -31,9 +31,9 @@ public class Engine{
 	public static final int MAXSHIPS =5;
 	public static final int DEFAULT_RESOURCES=100;
 	
-	private static final String DESTROYER = "D";
-	private static final String MAINSHIP = "M";
-	private static final String PILOT = "P";
+	public static final String DESTROYER = "D";
+	public static final String MAINSHIP = "M";
+	public static final String PILOT = "P";
 	
 	private static HashMap<String, Integer> tokenMap;
 	
@@ -41,16 +41,19 @@ public class Engine{
 	 * the constructor is called by the server (or API?) to start the game.
 	 */
     public Engine(){
-    	p1 = null;
-    	p2 = null;
+    	players=new Player[2];
+    	players[0]=null;
+    	players[1]=null;
+
     	tokenMap = new HashMap<String, Integer>();
     }
 	
     /**
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
+	 * returns -1 on bad imput
 	 */
-	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){//TODO: invalid input returns -1
+	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){
 		
 		ArrayList<Ship> ships = new ArrayList<Ship>();
 		ArrayList<Position> positions = new ArrayList<Position>();
@@ -59,7 +62,7 @@ public class Engine{
 		Position tempPos;
 		String tempType;
 		
-		for(int i = 0; i < Math.max(shipDatas.size(), MAXSHIPS); i++){
+		for(int i = 0; i < Math.min(shipDatas.size(), MAXSHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
 			if(tempType.equals(DESTROYER)){
@@ -87,16 +90,16 @@ public class Engine{
 		
 		Player player=new Player(DEFAULT_RESOURCES);
 		
-		boolean setupShips = Ability.setupBoard(player, ships, positions); 
+		boolean setupShips = Ability.setupBoard(player, ships, positions);
 		
 		if (!(setupShips && player.isAlive())) {
 			return -1;
 			}
-		if(p1 == null) {
-			p1 = player;
+		if(players[1] == null) {
+			players[1] = player;
 		}
-		else if (p2 == null) {
-			p2 = player;
+		else if (players[2] == null) {
+			players[2] = player;
 		}
 		else throw new RuntimeException("too many players!");
 		
@@ -125,13 +128,13 @@ public class Engine{
 		
 		Player p=null;
 		Player otherP=null;
-		if(p1.getPlayerID()==playerID){
-			p=p1;
-			otherP=p2;
+		if(players[1].getPlayerID()==playerID){
+			p=players[1];
+			otherP=players[2];
 		}
-		else if(p2.getPlayerID()==playerID){
-			p=p2;
-			otherP=p1;
+		else if(players[2].getPlayerID()==playerID){
+			p=players[2];
+			otherP=players[1];
 		}
 		if(p==null){
 			//TODO: just got an invalid player ID
@@ -151,7 +154,7 @@ public class Engine{
 						HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.add(hitResponse);
-					} catch(Exception e){
+					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
@@ -160,16 +163,17 @@ public class Engine{
 						ArrayList<HitReport> burstResponse = Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.addAll(burstResponse);
-					} catch(Exception e){
+					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
-				case SONAR: //TODO: Need a response for the other player as well?
+				case SONAR: 
+					//TODO: Need a response for the other player as well?
 					try{
 						ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						pings.addAll(sonarResponse);
-					} catch(Exception e){
+					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
@@ -177,7 +181,7 @@ public class Engine{
 					try{
 						boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(Exception e){
+					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
@@ -185,7 +189,7 @@ public class Engine{
 					try{
 						boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(Exception e){
+					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
@@ -199,35 +203,37 @@ public class Engine{
 	/**
 	 * This function will check for victory conditions
 	 * Then return to the player the results
+	 * TODO This function seems very broken, and needs to be gone over again very carefully.
 	 * @param results
 	 * @param hits
 	 * @param sonar
 	 */
 	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
-		if(!p1.isAlive() && !p2.isAlive()){
+		if(!players[0].isAlive() && !players[1].isAlive()){
 			//Tie game (Is this even possible?)
-			API.hasWon(p1.getPlayerID());
-		} else if(!p1.isAlive()){
+
+			API.hasWon(players[0].getPlayerID());
+		} else if(!players[0].isAlive()){
 			//Player 2 wins
-			API.hasWon(p1.getPlayerID());
-		} else if(!p2.isAlive()){
+			API.hasWon(players[0].getPlayerID());
+		} else if(!players[1].isAlive()){
 			//Player 1 wins
-			API.hasWon(p2.getPlayerID());
+			API.hasWon(players[1].getPlayerID());
 		} else{
 			//Send data to both players
-			int player1, player2;
-			Player notp;
-			if(p1.getPlayerID()==p.getPlayerID()){
-				player1=0;
-				player2=1;
-				notp=p2;
+			int currPlayerID, opponentID;
+			Player opponent;
+			if(players[1].getPlayerID()==p.getPlayerID()){
+				currPlayerID=0;
+				opponentID=1;
+				opponent=players[2];
 			} else{
-				player1=1;
-				player2=0;
-				notp=p1;
+				currPlayerID=1;
+				opponentID=0;
+				opponent=players[1];
 			}
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
-			ArrayList<Ship> ships=notp.getBoard().getShips();
+			ArrayList<Ship> ships=opponent.getBoard().getShips();
 			Ship tempShip;
 			Position tempPos;
 			String tempType;
@@ -241,18 +247,20 @@ public class Engine{
 				}else if(tempShip instanceof PilotShip){
 					tempType = PILOT;
 				}
-				String temporient="";
+				String tempOrient="";
 				if(tempType != null){
-					if(notp.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
-						temporient="H";
+					if(opponent.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
+						tempOrient="H";
 					}else{
-						temporient="V";
+						tempOrient="V";
 					}
-					tempPos=notp.getBoard().getShipPosition(tempShip.getID());
-					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
+					tempPos=opponent.getBoard().getShipPosition(tempShip.getID());
+					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
 			
+			// TODO REVIEW THIS
+			/*
 			API.writePlayerResults(player1, results);
 			API.writePlayerPings(player1, sonar);
 			API.writePlayerHits(player1, hits);
@@ -261,6 +269,8 @@ public class Engine{
 			API.writePlayerShips(player2, data);
 			API.writePlayerEnemyHits(player2, hits);
 			API.send(notp.getPlayerID());
+			*/
+
 		}
 	}
 	
@@ -303,12 +313,12 @@ public class Engine{
 	}
 
 	public int getP1ID() {
-		if(p1 != null) return p1.getPlayerID();
+		if(players[1] != null) return players[1].getPlayerID();
 		return -1;
 	}
 
 	public int getP2ID() {
-		if(p2 != null) return p2.getPlayerID();
+		if(players[2] != null) return players[2].getPlayerID();
 		return -1;
 	}
 
