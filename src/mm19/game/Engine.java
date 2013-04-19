@@ -95,11 +95,11 @@ public class Engine{
 		if (!(setupShips && player.isAlive())) {
 			return -1;
 			}
-		if(players[1] == null) {
-			players[1] = player;
+		if(players[0] == null) {
+			players[0] = player;
 		}
-		else if (players[2] == null) {
-			players[2] = player;
+		else if (players[1] == null) {
+			players[1] = player;
 		}
 		else throw new RuntimeException("too many players!");
 		
@@ -107,12 +107,12 @@ public class Engine{
 		
 		ArrayList<ShipData> data = getShipData(player);
 		
-		if(data.size() < 5) {
+		if(data.size() < shipDatas.size()) {
 			throw new RuntimeException("One of the ships failed to initialize for player " + player.getPlayerID());
 		}
 		
-		API.writePlayerShips(player.getPlayerID(), data);
-		API.writePlayerResources(player.getPlayerID(), player.getResources());
+		//API.writePlayerShips(player.getPlayerID(), data);
+		//API.writePlayerResources(player.getPlayerID(), player.getResources());
 		return player.getPlayerID();
 	}
 	
@@ -128,13 +128,13 @@ public class Engine{
 		
 		Player p=null;
 		Player otherP=null;
-		if(players[1].getPlayerID()==playerID){
-			p=players[1];
-			otherP=players[2];
-		}
-		else if(players[2].getPlayerID()==playerID){
-			p=players[2];
+		if(players[0].getPlayerID()==playerID){
+			p=players[0];
 			otherP=players[1];
+		}
+		else if(players[1].getPlayerID()==playerID){
+			p=players[1];
+			otherP=players[0];
 		}
 		if(p==null){
 			//just got an invalid player ID
@@ -223,14 +223,14 @@ public class Engine{
 			//Send data to both players
 			int currPlayerID, opponentID;
 			Player opponent;
-			if(players[1].getPlayerID()==p.getPlayerID()){
+			if(players[0].getPlayerID()==p.getPlayerID()){
 				currPlayerID=0;
 				opponentID=1;
-				opponent=players[2];
+				opponent=players[1];
 			} else{
 				currPlayerID=1;
 				opponentID=0;
-				opponent=players[1];
+				opponent=players[0];
 			}
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
 			ArrayList<Ship> ships=opponent.getBoard().getShips();
@@ -313,12 +313,12 @@ public class Engine{
 	}
 
 	public int getP1ID() {
-		if(players[1] != null) return players[1].getPlayerID();
+		if(players[0] != null) return players[0].getPlayerID();
 		return -1;
 	}
 
 	public int getP2ID() {
-		if(players[2] != null) return players[2].getPlayerID();
+		if(players[1] != null) return players[1].getPlayerID();
 		return -1;
 	}
 
