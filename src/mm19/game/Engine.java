@@ -137,7 +137,7 @@ public class Engine{
 			otherP=players[1];
 		}
 		if(p==null){
-			//TODO: just got an invalid player ID
+			//just got an invalid player ID
 			return;
 		}
 		

@@ -135,7 +135,7 @@ public class Ability {
         Board board = player.getBoard();
         Ship ship = board.getShip(shipId);
 
-        if(player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
+        if(ship == null || player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
         	throw new InputException();
         }
 
