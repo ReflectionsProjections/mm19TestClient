@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import mm19.response.ServerResponse;
 import mm19.response.ServerResponseException;
 import mm19.testclient.TestClient;
+import mm19.testclient.TestClientException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,12 +26,31 @@ public class Requester extends Thread{
 	}
 	
 	@Override
-	public void run() {
+	public void run(){
 		while(true) {
 			try {
+				// Prepare the input stream
 				in = new BufferedReader( new InputStreamReader(serverSocket.getInputStream()));
+				
+				// Block until the server sends you something
 				String s = in.readLine();
-				testClient.processResponse(new ServerResponse(new JSONObject(s)));
+				
+				// Formulate a ServerResponse object from the server's response
+				ServerResponse sr = new ServerResponse(new JSONObject(s));
+				
+				// Call the appropriate method.
+				if(sr.responseCode == 100) {
+					testClient.prepareTurn(sr);
+				}
+				else if(sr.responseCode == 200 || sr.resources == 400) {
+					testClient.processResponse(sr);
+				}
+				else if(sr.responseCode == 418) {
+					testClient.handleInterrupt(sr);
+				}
+				else {
+					throw new TestClientException("Unrecognized responseCode " + sr.responseCode);
+				}
 			}
 			catch(UnknownHostException e) {
 				e.printStackTrace();
@@ -45,6 +65,9 @@ public class Requester extends Thread{
 			} catch (JSONException e) {
 				e.printStackTrace();
 				break;
+			} catch (TestClientException e) {
+				// It's probably best not to break if the server sent you an invalid responseCode,
+				// just silently catch for now.
 			}
 		}
 	}
