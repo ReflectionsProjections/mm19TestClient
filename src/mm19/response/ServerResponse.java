@@ -105,7 +105,8 @@ public class ServerResponse {
 			
 		}
 		catch(JSONException e) {
-			throw new ServerResponseException("Error with JSON: " + e.getStackTrace());
+			e.printStackTrace();
+			throw new ServerResponseException("Error with JSON?!");
 		}
 		
 	}
