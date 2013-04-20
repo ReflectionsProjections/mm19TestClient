@@ -10,7 +10,9 @@ import mm19.response.ServerResponse;
 import org.json.JSONObject;
 
 public abstract class TestClient {
-		
+	
+	public static final int BOARD_WIDTH = 100;
+	
 	public String name;
 	protected Requester requester;
 	protected Responder responder;
@@ -57,6 +59,36 @@ public abstract class TestClient {
 	/*
 	 * Override these methods below
 	 */
+	
+	/**
+	 * This should prepare the initial layout of you ships, and any other pre-connecting logic
+	 * @return JSONObject containing the initial layout of your ships
+	 */
 	public abstract JSONObject setup();
+	
+	/**
+	 * This is the initial response, so you can set a ships health and such.
+	 */
+	public abstract void processInitialReponse(ServerResponse sr);
+	
+	/**
+	 * When the server returns a 200 or 400 responseCode, it means your turn has been processed, 
+	 * and it will call this function.
+	 * @param sr - the server's response
+	 */
 	public abstract void processResponse(ServerResponse sr);
+	
+	/**
+	 * When the server returns a 100 responseCode, it means it's your turn.
+	 * @return JSONObject containing your turn
+	 */
+	public abstract JSONObject prepareTurn(ServerResponse sr);
+	
+	/**
+	 * When the server sends an interrupt, it means you've timed out. This function is called to handle it.
+	 * @param sr
+	 * @return
+	 */
+	
+	public abstract void handleInterrupt(ServerResponse sr);
 }
