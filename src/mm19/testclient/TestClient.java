@@ -1,17 +1,31 @@
 package mm19.testclient;
 
-public class TestClient {
+import mm19.communication.Requester;
+import mm19.response.ServerResponse;
+
+import org.json.JSONObject;
+
+public abstract class TestClient {
 		
-	private String name;
-	private Requester requester;
+	public String name;
+	protected Requester requester;
 	
 	public TestClient(String n) {
 		System.out.println("Creating New TestClient: " + n);
 		name = n;
-		requester = new Requester(name);
+		requester = new Requester(this);
 	}
 	
 	public void connect() {
-		requester.connectToServer();
+		JSONObject obj = setup();
+		ServerResponse sr = requester.connectToServer(obj);
+		processInitialResponse(sr);
 	}
+	
+	/*
+	 * Override these methods below
+	 */
+	public abstract JSONObject setup();
+	public abstract void processInitialResponse(ServerResponse sr);
+	public abstract void processResponse(ServerResponse sr);
 }
