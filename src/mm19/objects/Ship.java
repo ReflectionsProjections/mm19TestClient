@@ -4,14 +4,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Ship {
+	public enum ShipType{Pilot, Destroyer, Main};
 	public int ID;
 	public int health;
-	public String type;
+	public ShipType type;
 	public int xCoord;
 	public int yCoord;
 	public String orientation;
 	
-	public Ship(int i, int h, String t, int x, int y, String o) {
+	public Ship(int i, int h, ShipType t, int x, int y, String o) {
 		ID = i;
 		health = h;
 		type = t;
@@ -23,7 +24,16 @@ public class Ship {
 	public Ship(JSONObject obj) throws JSONException{
 		ID = obj.getInt("ID");
 		health = obj.getInt("health");
-		type = obj.getString("type");
+		
+		String t = obj.getString("type");
+		if (t.equals("P")) {
+			type = ShipType.Pilot;
+		} else if (t.equals("D")) {
+			type = ShipType.Destroyer;
+		} else if (t.equals("M")) {
+			type = ShipType.Main;
+		}
+		
 		xCoord = obj.getInt("xCoord");
 		yCoord = obj.getInt("yCoord");
 		orientation = obj.getString("orientation");
