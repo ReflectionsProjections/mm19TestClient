@@ -113,6 +113,7 @@ public class Engine{
 		
 		API.writePlayerShips(player.getPlayerID(), data);
 		API.writePlayerResources(player.getPlayerID(), player.getResources());
+		API.writePlayerResponseCode(player.getPlayerID());
 		return player.getPlayerID();
 	}
 	
