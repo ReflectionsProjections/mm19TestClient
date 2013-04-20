@@ -10,6 +10,7 @@ import mm19.response.ServerResponse;
 import mm19.testclient.TestClient;
 
 public class TestClientAlex extends TestClient{
+	
 	public TestClientAlex() {
 		super("SuperPwnageFest");
 	}
@@ -55,13 +56,7 @@ public class TestClientAlex extends TestClient{
 	
 	@Override
 	public void processResponse(ServerResponse sr) {
-		
-	}
-
-	@Override
-	public void processInitialResponse(ServerResponse sr) {
-		
-		
+		System.out.println(sr.toString());
 	}
 	
 	
