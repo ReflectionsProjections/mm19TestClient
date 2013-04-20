@@ -629,4 +629,9 @@ public class API {
 		return false;
 	}
 
+	public static void printTurnToLog(int playerID) {
+		
+		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
+	}
+
 }

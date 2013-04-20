@@ -107,7 +107,7 @@ public class Engine{
 		
 		ArrayList<ShipData> data = getShipData(player);
 		
-		if(data.size() < 5) {
+		if(data.size() < shipDatas.size()) {
 			throw new RuntimeException("One of the ships failed to initialize for player " + player.getPlayerID());
 		}
 		
@@ -259,17 +259,20 @@ public class Engine{
 					data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
-			
+		
 			// TODO REVIEW THIS
 			/*
 			API.writePlayerResults(player1, results);
 			API.writePlayerPings(player1, sonar);
 			API.writePlayerHits(player1, hits);
 			//Send some info to the other player!
-			
+			*/
+			API.printTurnToLog(p.getPlayerID());
+			/*
 			API.writePlayerShips(player2, data);
 			API.writePlayerEnemyHits(player2, hits);
 			API.send(notp.getPlayerID());
+			API.send(p.getPlayerID());
 			*/
 
 		}
