@@ -55,7 +55,10 @@ public class EngineTests {
 		    testGame = new Engine();
 			testGame.playerSet(genPlayer(), "A");
 			testGame.playerSet(genPlayer(), "B");
-			testGame.playerTurn("A", genMove());
+			testGame.playerTurn("A", genMove()); //Cannot move Destroyer
+			testGame.playerTurn("A", new ArrayList<Action>()); //wait
+			testGame.playerTurn("A", new ArrayList<Action>()); //wait
+			testGame.playerTurn("A", genMove()); //CAN move Destroyer
 		}
 		
 		@Test
