@@ -47,6 +47,7 @@ public class Requester extends Thread{
 				else if(sr.responseCode == 200 || sr.resources == 400) {
 					if(!init) {
 						testClient.processInitialReponse(sr);
+						init = true;
 					} else {
 						testClient.processResponse(sr);
 					}
