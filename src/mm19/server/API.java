@@ -433,7 +433,7 @@ public class API {
 			if ((tempHit = makeHitJSON(hits.get(length))) != null)
 				hitsJson.put(tempHit);
 		}
-		if (writePlayer(status, "hitReport", (Object) hitsJson))
+		if (writePlayer(status, "hitReport", hitsJson))
 			return true;
 		return false;
 	}
@@ -454,7 +454,7 @@ public class API {
 			if ((tempHit = makeHitJSON(hits.get(length))) != null)
 				hitsJson.put(tempHit);
 		}
-		if (writePlayer(status, "enemyHitReport", (Object) hitsJson))
+		if (writePlayer(status, "enemyHitReport", hitsJson))
 			return true;
 		return false;
 	}
@@ -494,7 +494,7 @@ public class API {
 			if ((tempPing = makePingJSON(pings.get(length))) != null)
 				pingsJson.put(tempPing);
 		}
-		if (writePlayer(status, "pingReport", (Object) pingsJson))
+		if (writePlayer(status, "pingReport", pingsJson))
 			return true;
 
 		return false;
