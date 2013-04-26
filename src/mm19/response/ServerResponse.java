@@ -26,28 +26,28 @@ public class ServerResponse {
 	public ServerResponse(JSONObject obj) throws ServerResponseException{
 		try {
 			if(!obj.has("responseCode")) {
-				throw new ServerResponseException("Server does not have a responseCode object");
+				throw new ServerResponseException("Server does not have a responseCode object.\n" + obj);
 			}
 			if(!obj.has("error")) {
-				throw new ServerResponseException("Server does not have an error object");
+				throw new ServerResponseException("Server does not have an error object.\n" + obj);
 			}
 			if(!obj.has("playerToken")) {
-				throw new ServerResponseException("Server does not have a token object");
+				throw new ServerResponseException("Server does not have a token object.\n" + obj);
 			}
 			if(!obj.has("playerName")) {
-				throw new ServerResponseException("Server does not have a playerName object");
+				throw new ServerResponseException("Server does not have a playerName object.\n" + obj);
 			}
 			if(!obj.has("ships")) {
-				throw new ServerResponseException("Server does not have a ships object");
+				throw new ServerResponseException("Server does not have a ships object.\n" + obj);
 			}
 			if(!obj.has("shipActionResults")) {
-				throw new ServerResponseException("Server does not have a shipActionResults object");
+				throw new ServerResponseException("Server does not have a shipActionResults object.\n" + obj);
 			}
 			if(!obj.has("hitReport")) {
-				throw new ServerResponseException("Server does not have a hitReport object");
+				throw new ServerResponseException("Server does not have a hitReport object.\n" + obj);
 			}
 			if(!obj.has("pingReport")) {
-				throw new ServerResponseException("Server does not have a pingReport object");
+				throw new ServerResponseException("Server does not have a pingReport object.\n" + obj);
 			}
 			
 			//Getting responseCode
