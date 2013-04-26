@@ -150,6 +150,7 @@ public class Engine{
 		
 		ArrayList<ShipActionResult> results = new ArrayList<ShipActionResult>();
 		ArrayList<HitReport> hits = new ArrayList<HitReport>();
+		ArrayList<HitReport> opponentHits= new ArrayList<HitReport>();
 		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
 		
 		for(Action a: actions){
@@ -159,22 +160,27 @@ public class Engine{
 						HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.add(hitResponse);
+						opponentHits.add(hitResponse);
 					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
 				case BURST_SHOT:
 					try{
-						//ArrayList<HitReport> burstResponse = 
+						ArrayList<HitReport> burstResponse = 
 				        Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-						//results.add(new ShipActionResult(a.shipID, "S"));
+						results.add(new ShipActionResult(a.shipID, "S"));
+						for(HitReport h : burstResponse){
+							if(h.shotSuccessful){
+								opponentHits.add(h);
+							}
+						}
 						//hits.addAll(burstResponse);
 					} catch(EngineException e){
 						results.add(new ShipActionResult(a.shipID, e.getMessage()));
 					} 
 					break;
-				case SONAR: 
-					//TODO: Need a response for the other player as well?
+				case SONAR:
 					try{
 						ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
@@ -203,7 +209,7 @@ public class Engine{
 					break;
 			}
 		}
-		endofTurn(p, results, hits, pings);
+		endofTurn(p, results, hits, opponentHits, pings);
 	}
 	
 	/**
@@ -214,7 +220,7 @@ public class Engine{
 	 * @param hits
 	 * @param sonar
 	 */
-	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<SonarReport> sonar){
+	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
 		if(!players[0].isAlive() && !players[1].isAlive()){
 			//Tie game (Is this even possible?)
 
@@ -286,6 +292,7 @@ public class Engine{
 			
 			// Send some info to the other player!
 			API.writePlayerShips(opponentID, getShipData(players[opponentID]));
+			API.writePlayerHits(opponentID, opponentHits);
 			API.writePlayerPings(opponentID, opponentSonar);
 			
 			

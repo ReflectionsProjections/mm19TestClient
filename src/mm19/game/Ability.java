@@ -165,8 +165,7 @@ public class Ability {
      * @param targetY         The y coordinate to shoot at
      */
     // @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
-    //ArrayList<HitReport>
-    public static void burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    public static ArrayList<HitReport> burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
 
@@ -201,12 +200,12 @@ public class Ability {
                     hitSuccessful = false;
                 }
 
-                //hitReports.add(new HitReport(x, y, hitSuccessful, ship));
+                hitReports.add(new HitReport(x, y, hitSuccessful));
 
             }
         }
 
-        //return hitReports;
+        return hitReports;
     }
 
     /**
