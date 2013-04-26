@@ -311,6 +311,7 @@ public class Server {
 			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
 					true);
 			out.println(player1);
+			//System.out.println(player1);
 			out.flush();
 
 		} catch (IOException e) {
