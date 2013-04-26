@@ -3,16 +3,15 @@ package mm19.testclient.alex;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import mm19.objects.HitReport;
 import mm19.objects.Ship;
 import mm19.objects.Ship.ShipType;
 import mm19.objects.ShipAction;
 import mm19.response.ServerResponse;
 import mm19.testclient.TestClient;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Contains logic for Alex's test client, feel free to disregard any
@@ -132,8 +131,8 @@ public class TestClientAlex extends TestClient{
 				if(ship.type == ShipType.Pilot) {
 					actions.add(new ShipAction(ship.ID).toJSONObject());
 				} else {
-					int xCoord = (int) Math.random()*TestClient.BOARD_WIDTH;
-					int yCoord = (int) Math.random()*TestClient.BOARD_WIDTH;
+					int xCoord = (int) (Math.random()*TestClient.BOARD_WIDTH);
+					int yCoord = (int) (Math.random()*TestClient.BOARD_WIDTH);
 					
 					ShipAction tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.Fire, 0);
 					actions.add(tempAction.toJSONObject());

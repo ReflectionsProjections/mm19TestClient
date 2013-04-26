@@ -19,12 +19,13 @@ public class Requester extends Thread{
 	private TestClient testClient;
 	private Socket serverSocket;
 	private BufferedReader in;
-	
+	private boolean init;
 	public Requester(TestClient tc, Socket ss) {
 		testClient = tc;
 		serverSocket = ss;
+		init = false;
 	}
-	
+
 	@Override
 	public void run(){
 		while(true) {
@@ -37,13 +38,19 @@ public class Requester extends Thread{
 				
 				// Formulate a ServerResponse object from the server's response
 				ServerResponse sr = new ServerResponse(new JSONObject(s));
-				
 				// Call the appropriate method.
 				if(sr.responseCode == 100) {
-					testClient.prepareTurn(sr);
+					System.out.println(testClient.name + "'s turn");
+					JSONObject obj = testClient.prepareTurn(sr);
+					testClient.respondToServer(obj);
 				}
 				else if(sr.responseCode == 200 || sr.resources == 400) {
-					testClient.processResponse(sr);
+					if(!init) {
+						testClient.processInitialReponse(sr);
+						init = true;
+					} else {
+						testClient.processResponse(sr);
+					}
 				}
 				else if(sr.responseCode == 418) {
 					testClient.handleInterrupt(sr);

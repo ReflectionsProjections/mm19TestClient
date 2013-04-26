@@ -12,7 +12,7 @@ import org.json.JSONObject;
 public abstract class TestClient {
 	
 	public static final int BOARD_WIDTH = 100;
-	
+	public static int TURN = 0;
 	public String name;
 	protected Requester requester;
 	protected Responder responder;
@@ -54,6 +54,10 @@ public abstract class TestClient {
 			e.printStackTrace();
 		} 
 		return null;
+	}
+	
+	public void respondToServer(JSONObject obj) {
+		responder.sendResponse(obj.toString());
 	}
 	
 	/*
