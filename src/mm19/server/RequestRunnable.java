@@ -14,22 +14,22 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class RequestRunnable implements Runnable {
 
 	protected Socket clientSocket = null;
 	protected String playerToken;
-	
-	protected API mAPI = null;
+	protected int playerID;
 	
 	protected BufferedReader in = null;
 	
 	
-	public RequestRunnable(Socket clientSocket, API api, String token) {
+	public RequestRunnable(Socket clientSocket, String token, int pID) {
 		this.clientSocket = clientSocket;
 		playerToken = token;
-		api = mAPI;
+		playerID = pID;
 	}
 	
 	@Override
@@ -39,12 +39,18 @@ public class RequestRunnable implements Runnable {
 			
 			try {
 				in = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
+				
 				String msg = in.readLine();
+				System.out.println("Recieved turn");
+				JSONObject obj = new JSONObject(msg);
+				Server.sendAPI(obj);
+				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				break;
 				
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
 		}
 			
