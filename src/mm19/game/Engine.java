@@ -284,17 +284,12 @@ public class Engine{
 				opponent=players[0];
 			}
 			//reset player special
-			players[currPlayerID].resetSpecialAbility();
+			Ability.resetAbilityStates(players[currPlayerID]);
 			ArrayList<ShipData> data=new ArrayList<ShipData>();
 			
             Position tempPos;
             String tempType;
-            ArrayList<Ship> ships=players[currPlayerID].getBoard().getShips();
-            for(Ship ship : ships){
-                ship.resetAbility();
-            }
-            
-			ships=opponent.getBoard().getShips();
+            ArrayList<Ship> ships=opponent.getBoard().getShips();
 			for(Ship ship : ships){
 				tempType = null;
 				if(ship instanceof DestroyerShip){
