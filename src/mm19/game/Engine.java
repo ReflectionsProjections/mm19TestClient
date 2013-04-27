@@ -136,7 +136,7 @@ public class Engine{
 	 * This function attempts all of the player's chosen actions for the turn
 	 * Afterwards, it tells the API to send the data back
 	 */
-	public void playerTurn(String playerToken, ArrayList<Action> actions){
+	public boolean playerTurn(String playerToken, ArrayList<Action> actions){
 		//Check for valid playerID
 		int playerID;
 		if(playerTokens[0].equals(playerToken)) {
@@ -147,7 +147,7 @@ public class Engine{
 		if(playerID!=turn){
 			API.writePlayerError(playerID, "It is not your turn!");
 			API.writePlayerResponseCode(playerID);
-			return;
+			return false;
 		}
 		Player p=null;
 		Player otherP=null;
@@ -248,6 +248,7 @@ public class Engine{
 			}
 		}
 		endofTurn(p, results, hits, opponentHits, pings);
+		return true;
 	}
 	
 	/**
