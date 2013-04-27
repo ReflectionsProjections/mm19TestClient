@@ -100,12 +100,12 @@ public class Ability {
     public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
         if(attackingShip == null || !attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
-        	throw new InputException();
+        	throw new InputException("Input exception when firing cannon of ship "+shipID);
         }
 
         boolean hadResources = attackingPlayer.takeResources(MISSILE_COST);
         if (!hadResources) {
-        	throw new ResourceException();
+        	throw new ResourceException("Not enough resources to fire cannons on ship "+shipID);
         }
 
         attackingShip.useAbility();
@@ -127,24 +127,24 @@ public class Ability {
      * Attempt to move a ship
      *
      * @param player      The player moving a ship
-     * @param shipId      The id of a ship to move
+     * @param shipID      The id of a ship to move
      * @param newPosition A position object indicating the new position of the ship
      * @return False if the move could not be made or player did not have enough resources, true otherwise.
      */
-    public static boolean move(Player player, int shipId, Position newPosition) {
+    public static boolean move(Player player, int shipID, Position newPosition) {
         Board board = player.getBoard();
-        Ship ship = board.getShip(shipId);
+        Ship ship = board.getShip(shipID);
 
         if(ship == null || player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
-        	throw new InputException();
+        	throw new InputException("Input exception in move "+shipID);
         }
 
         boolean hadResources = player.takeResources(ship.getMoveCost());
         if (!hadResources) {
-        	throw new ResourceException();
+        	throw new ResourceException("Not enough resources to move ship "+shipID);
         }
 
-        boolean moveSuccessful = board.moveShip(shipId, newPosition);
+        boolean moveSuccessful = board.moveShip(shipID, newPosition);
         if (moveSuccessful) {
             player.useSpecialAbility();
             ship.useAbility();
@@ -170,12 +170,12 @@ public class Ability {
         Ship attackingShip = attackersBoard.getShip(shipID);
 
         if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
-        	throw new InputException();
+        	throw new InputException("Input exception on burst shot from "+shipID);
         }
 
         boolean hadResources = attackingPlayer.takeResources(BURST_SHOT_COST);
         if (!hadResources) {
-            throw new ResourceException();
+            throw new ResourceException("Not enough resources to burst shot from "+shipID);
         }
 
         attackingShip.useAbility();
@@ -223,12 +223,12 @@ public class Ability {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
         if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
-            throw new InputException();
+            throw new InputException("Input exception on ping from "+shipID);
         }
 
         boolean hadResources = attackingPlayer.takeResources(SONAR_COST);
         if (!hadResources) {
-            throw new ResourceException();
+            throw new ResourceException("Not enough resources to ping from "+shipID);
         }
 
         attackingPlayer.useSpecialAbility();

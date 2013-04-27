@@ -1,9 +1,10 @@
 package mm19.game;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import mm19.exceptions.EngineException;
+import mm19.exceptions.InputException;
+import mm19.exceptions.ResourceException;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
@@ -22,6 +23,7 @@ import mm19.server.ShipData;
 public class Engine{
 	private Player[] players;
 	private String[] playerTokens;
+	private int turn;
 	public static final String SHOOT = "F";
 	public static final String BURST_SHOT = "BS";
 	public static final String SONAR = "S";
@@ -46,12 +48,13 @@ public class Engine{
     	playerTokens = new String[2];
     	playerTokens[0] = "";
     	playerTokens[1] = "";
+    	turn=0;
     }
 	
     /**
 	 * This function sets up the player's pieces on the board as specified
 	 * And returns the playerID to the server so that it can refer back to it
-	 * returns -1 on bad imput
+	 * returns -1 on bad input
 	 */
 	public int playerSet(ArrayList<ShipData> shipDatas, String playerToken){
 		
@@ -85,7 +88,13 @@ public class Engine{
 				
 				ships.add(tempShip);
 				positions.add(tempPos); 
+			} else{
+				API.writePlayerError(turn, "Unable to initialize ship "+i+" to type "+shipDatas.get(i).type);
 			}
+		}
+		if(ships.size() < shipDatas.size()) {
+			API.writePlayerResponseCode(turn);
+			return -1;
 		}
 		
 		Player player=new Player(DEFAULT_RESOURCES);
@@ -93,6 +102,8 @@ public class Engine{
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
 		
 		if (!(setupShips && player.isAlive())) {
+			API.writePlayerError(turn, "Unable to setup ships due to bad positions");
+			API.writePlayerResponseCode(turn);
 			return -1;
 			}
 		if(players[0] == null) {
@@ -107,13 +118,16 @@ public class Engine{
 		
 		ArrayList<ShipData> data = getShipData(player);
 		
-		if(data.size() < shipDatas.size()) {
-			throw new RuntimeException("One of the ships failed to initialize for player " + player.getPlayerID());
-		}
 		
 		API.writePlayerShips(player.getPlayerID(), data);
 		API.writePlayerResources(player.getPlayerID(), player.getResources());
 		API.writePlayerResponseCode(player.getPlayerID());
+		
+		if(turn==0){
+			turn=1;
+		} else{
+			turn=0;
+		}
 		return player.getPlayerID();
 	}
 	
@@ -130,7 +144,11 @@ public class Engine{
 		} else {
 			playerID = 1;
 		}
-		
+		if(playerID!=turn){
+			API.writePlayerError(playerID, "It is not your turn!");
+			API.writePlayerResponseCode(playerID);
+			return;
+		}
 		Player p=null;
 		Player otherP=null;
 		if(players[0].getPlayerID()==playerID){
@@ -141,10 +159,10 @@ public class Engine{
 			p=players[1];
 			otherP=players[0];
 		}
-		if(p==null){
-			//TODO: just got an invalid player ID
-			return;
-		}
+//		if(p==null){
+//			//just got an invalid player ID
+//			return;
+//		}
 		
 		Ability.gatherResources(p);
 		
@@ -161,9 +179,13 @@ public class Engine{
 						results.add(new ShipActionResult(a.shipID, "S"));
 						hits.add(hitResponse);
 						opponentHits.add(hitResponse);
-					} catch(EngineException e){
-						results.add(new ShipActionResult(a.shipID, e.getMessage()));
-					} 
+					} catch(InputException e){
+						results.add(new ShipActionResult(a.shipID, "I"));
+						API.writePlayerError(playerID, e.getMessage());
+					} catch(ResourceException e){
+						results.add(new ShipActionResult(a.shipID, "R"));
+						API.writePlayerError(playerID, e.getMessage());
+					}
 					break;
 				case BURST_SHOT:
 					try{
@@ -176,34 +198,50 @@ public class Engine{
 							}
 						}
 						//hits.addAll(burstResponse);
-					} catch(EngineException e){
-						results.add(new ShipActionResult(a.shipID, e.getMessage()));
-					} 
+					} catch(InputException e){
+						results.add(new ShipActionResult(a.shipID, "I"));
+						API.writePlayerError(playerID, e.getMessage());
+					} catch(ResourceException e){
+						results.add(new ShipActionResult(a.shipID, "R"));
+						API.writePlayerError(playerID, e.getMessage());
+					}
 					break;
 				case SONAR:
 					try{
 						ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 						results.add(new ShipActionResult(a.shipID, "S"));
 						pings.addAll(sonarResponse);
-					} catch(EngineException e){
-						results.add(new ShipActionResult(a.shipID, e.getMessage()));
-					} 
+					} catch(InputException e){
+						results.add(new ShipActionResult(a.shipID, "I"));
+						API.writePlayerError(playerID, e.getMessage());
+					} catch(ResourceException e){
+						results.add(new ShipActionResult(a.shipID, "R"));
+						API.writePlayerError(playerID, e.getMessage());
+					}
 					break;
 				case MOVE_Horizontal:
 					try{
 						boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(EngineException e){
-						results.add(new ShipActionResult(a.shipID, e.getMessage()));
-					} 
+					} catch(InputException e){
+						results.add(new ShipActionResult(a.shipID, "I"));
+						API.writePlayerError(playerID, e.getMessage());
+					} catch(ResourceException e){
+						results.add(new ShipActionResult(a.shipID, "R"));
+						API.writePlayerError(playerID, e.getMessage());
+					}
 					break;
 				case MOVE_Vertical:
 					try{
 						boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(EngineException e){
-						results.add(new ShipActionResult(a.shipID, e.getMessage()));
-					} 
+					} catch(InputException e){
+						results.add(new ShipActionResult(a.shipID, "I"));
+						API.writePlayerError(playerID, e.getMessage());
+					} catch(ResourceException e){
+						results.add(new ShipActionResult(a.shipID, "R"));
+						API.writePlayerError(playerID, e.getMessage());
+					}
 					break;
 				default:
 					break;
@@ -295,7 +333,11 @@ public class Engine{
 			API.writePlayerHits(opponentID, opponentHits);
 			API.writePlayerPings(opponentID, opponentSonar);
 			
-			
+			if(turn==0){
+				turn=1;
+			} else{
+				turn=0;
+			}
 		}
 	}
 	
