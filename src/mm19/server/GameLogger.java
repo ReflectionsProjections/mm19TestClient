@@ -45,6 +45,7 @@ public class GameLogger {
 		try {
 			bw.write(outPut);
 			bw.write("\n");
+			bw.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(
@@ -61,4 +62,8 @@ public class GameLogger {
 			e.printStackTrace();
 		}
 	}
+	 protected void finalize() {
+	        close();
+	        System.out.println("error you forgot to close the logfile handler");
+	    }
 }

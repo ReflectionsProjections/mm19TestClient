@@ -38,7 +38,7 @@ public class Server {
 	private static int playersConnected;
 
 	private static GameLogger visualizerLog = null;
-	private static String visualizerLogURL = "E:\\Eclipse\\workspace\\mm19\\log.out";
+	private static String visualizerLogURL = "/home/josh/gitRepos/mm19/src/log.out";
 
 	// Sockets
 	private static ServerSocket socket = null;
@@ -311,6 +311,7 @@ public class Server {
 			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
 					true);
 			out.println(player1);
+			//System.out.println(player1);
 			out.flush();
 
 		} catch (IOException e) {
