@@ -322,6 +322,11 @@ public class Server {
 	}
 
 	public static void winCondition(int player) {
+		try {
+			Thread.sleep(5);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		System.exit(player);
 	}
 
