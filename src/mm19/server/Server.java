@@ -38,7 +38,7 @@ public class Server {
 	private static int playersConnected;
 
 	private static GameLogger visualizerLog = null;
-	private static String visualizerLogURL = "/home/josh/gitRepos/mm19/src/log.out";
+	private static String visualizerLogURL = "log.out";
 
 	// Sockets
 	private static ServerSocket socket = null;
@@ -321,8 +321,8 @@ public class Server {
 		}
 	}
 
-	public static void winCondition(String authP1) {
-		// TODO This method
+	public static void winCondition(int player) {
+		System.exit(player);
 	}
 
 	public static synchronized void sendAPI(JSONObject obj) {
