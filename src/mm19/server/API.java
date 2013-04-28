@@ -663,11 +663,15 @@ public class API {
 
 			writePlayer(0, "responseCode", 9001);
 			writePlayer(1, "responseCode", -1);
+			send(0);
+			send(1);
 			Server.winCondition(0);
 			return true;
 		} else if (PlayerID == 1) {
 			writePlayer(1, "responseCode", 9001);
             writePlayer(0, "responseCode", -1);
+        	send(0);
+			send(1);
             Server.winCondition(1);
 			return true;
 		}
