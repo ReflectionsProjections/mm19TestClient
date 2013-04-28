@@ -28,6 +28,15 @@ public class ServerResponse {
 			if(!obj.has("responseCode")) {
 				throw new ServerResponseException("Server does not have a responseCode object.\n" + obj);
 			}
+			if (obj.getInt("responseCode")==-1){
+					System.out.print("you loose");
+					System.exit(0);
+			}			
+			if (obj.getInt("responseCode")==9001){
+					System.out.print("you win");
+					System.exit(0);
+			}
+						
 			if(!obj.has("error")) {
 				throw new ServerResponseException("Server does not have an error object.\n" + obj);
 			}
