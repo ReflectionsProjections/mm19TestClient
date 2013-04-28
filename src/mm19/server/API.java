@@ -134,16 +134,21 @@ public class API {
 				if (obj.has("shipActions")) {
 					JSONArray actionListObj = obj.getJSONArray("shipActions");
 					actionList = getActionList(actionListObj);
-					game.playerTurn(playerToken, actionList);
-					
-					writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-					writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-					API.printTurnToLog(currPlayerID);
-					send(currPlayerID);
-					
-					Timer t = new Timer();
-					ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
-					t.schedule(new ServerTimerTask(), 50);
+					boolean success = game.playerTurn(playerToken, actionList);
+					if(success){
+						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+						API.printTurnToLog(currPlayerID);
+						send(currPlayerID);
+						
+						Timer t = new Timer();
+						ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+						t.schedule(new ServerTimerTask(), 50);
+					} else{
+						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
+						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
+						send(currPlayerID);
+					}
 					return true;
 				}
 			}
@@ -655,14 +660,15 @@ public class API {
 
 	public static boolean hasWon(int PlayerID) {
 		if (PlayerID == 0) {
-			Server.winCondition(playerToken[0]);
+
 			writePlayer(0, "responseCode", 9001);
 			writePlayer(1, "responseCode", -1);
+			Server.winCondition(0);
 			return true;
 		} else if (PlayerID == 1) {
-			Server.winCondition(playerToken[1]);
 			writePlayer(1, "responseCode", 9001);
             writePlayer(0, "responseCode", -1);
+            Server.winCondition(1);
 			return true;
 		}
 		return false;

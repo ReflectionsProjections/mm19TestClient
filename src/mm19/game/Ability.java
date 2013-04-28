@@ -26,8 +26,10 @@ public class Ability {
     final public static int BURST_SHOT_DAMAGE = (int)(MISSILE_DAMAGE * BURST_SHOT_EFFECTIVENESS);
     final public static int BURST_SHOT_COST = 250;
     final public static int BURST_SHOT_RADIUS = 2; //3x3 area
+    final public static int BURST_SHOT_DIAMETER = 2*BURST_SHOT_RADIUS - 1;
 
     final public static int SONAR_RADIUS = 3; //5x5 area
+    final public static int SONAR_DIAMETER = 2*SONAR_RADIUS - 1;
     final public static int SONAR_COST = 110;
 
     final public static int MOVE_COST_PER_UNIT_LENGTH = 50;
@@ -99,13 +101,19 @@ public class Ability {
      */
     public static HitReport shoot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Ship attackingShip = attackingPlayer.getBoard().getShip(shipID);
-        if(attackingShip == null || !attackingShip.canShoot() || attackingShip.hasUsedAbility()) {
-        	throw new InputException();
+        if(attackingShip == null) {
+        	throw new InputException("Input exception when firing cannon of ship "+shipID+": It is not a valid ship!");
+        }
+        if(!attackingShip.canShoot()) {
+        	throw new InputException("Input exception when firing cannon of ship "+shipID+": This ship cannot shoot");
+        }
+        if(attackingShip.hasUsedAbility()) {
+        	throw new InputException("Input exception when firing cannon of ship "+shipID+": This ship already used its ability");
         }
 
         boolean hadResources = attackingPlayer.takeResources(MISSILE_COST);
         if (!hadResources) {
-        	throw new ResourceException();
+        	throw new ResourceException("Not enough resources to fire cannons on ship "+shipID);
         }
 
         attackingShip.useAbility();
@@ -127,24 +135,33 @@ public class Ability {
      * Attempt to move a ship
      *
      * @param player      The player moving a ship
-     * @param shipId      The id of a ship to move
+     * @param shipID      The id of a ship to move
      * @param newPosition A position object indicating the new position of the ship
      * @return False if the move could not be made or player did not have enough resources, true otherwise.
      */
-    public static boolean move(Player player, int shipId, Position newPosition) {
+    public static boolean move(Player player, int shipID, Position newPosition) {
         Board board = player.getBoard();
-        Ship ship = board.getShip(shipId);
+        Ship ship = board.getShip(shipID);
 
-        if(ship == null || player.hasUsedSpecial() || !ship.canMove() || ship.hasUsedAbility()) {
-        	throw new InputException();
+        if(ship == null) {
+        	throw new InputException("Input exception in move "+shipID+": This ship is not valid!");
+        }
+        if(player.hasUsedSpecial()) {
+        	throw new InputException("Input exception in move "+shipID+": You already used your special this turn");
+        }
+        if(!ship.canMove()) {
+        	throw new InputException("Input exception in move "+shipID+": This ship cannot move");
+        }
+        if(ship.hasUsedAbility()) {
+        	throw new InputException("Input exception in move "+shipID+": This ship has used its ability");
         }
 
         boolean hadResources = player.takeResources(ship.getMoveCost());
         if (!hadResources) {
-        	throw new ResourceException();
+        	throw new ResourceException("Not enough resources to move ship "+shipID);
         }
 
-        boolean moveSuccessful = board.moveShip(shipId, newPosition);
+        boolean moveSuccessful = board.moveShip(shipID, newPosition);
         if (moveSuccessful) {
             player.useSpecialAbility();
             ship.useAbility();
@@ -165,18 +182,26 @@ public class Ability {
      * @param targetY         The y coordinate to shoot at
      */
     // @return Null if the attackingPlayer did not have enough resources, an ArrayList of hitReports otherwise
-    //ArrayList<HitReport>
-    public static void burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
+    public static ArrayList<HitReport> burstShot(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
 
-        if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canBurstShot() || attackingShip.hasUsedAbility()) {
-        	throw new InputException();
+        if(attackingShip == null) {
+        	throw new InputException("Input exception on burst shot from "+shipID+": Ship is not valid!");
+        }
+        if(attackingPlayer.hasUsedSpecial()) {
+        	throw new InputException("Input exception on burst shot from "+shipID+": You used your special already");
+        }
+        if(!attackingShip.canBurstShot()) {
+        	throw new InputException("Input exception on burst shot from "+shipID+": This ship has no burst shot");
+        }
+        if(attackingShip.hasUsedAbility()) {
+        	throw new InputException("Input exception on burst shot from "+shipID+": This ship already used its ability");
         }
 
         boolean hadResources = attackingPlayer.takeResources(BURST_SHOT_COST);
         if (!hadResources) {
-            throw new ResourceException();
+            throw new ResourceException("Not enough resources to burst shot from "+shipID);
         }
 
         attackingShip.useAbility();
@@ -187,8 +212,8 @@ public class Ability {
         int NECornerX = targetX - BURST_SHOT_RADIUS + 1;
         int NECornerY = targetY - BURST_SHOT_RADIUS + 1;
 
-        for (int x = NECornerX; x < NECornerX + BURST_SHOT_RADIUS; x++) {
-            for (int y = NECornerY; y < NECornerY + BURST_SHOT_RADIUS; y++) {
+        for (int x = NECornerX; x < NECornerX + BURST_SHOT_DIAMETER; x++) {
+            for (int y = NECornerY; y < NECornerY + BURST_SHOT_DIAMETER; y++) {
                 Ship ship = board.getShip(x, y);
                 boolean hitSuccessful;
                 if (ship != null) {
@@ -201,12 +226,12 @@ public class Ability {
                     hitSuccessful = false;
                 }
 
-                //hitReports.add(new HitReport(x, y, hitSuccessful, ship));
+                hitReports.add(new HitReport(x, y, hitSuccessful));
 
             }
         }
 
-        //return hitReports;
+        return hitReports;
     }
 
     /**
@@ -223,13 +248,22 @@ public class Ability {
     sonar(Player attackingPlayer, Player targetPlayer, int shipID, int targetX, int targetY) {
         Board attackersBoard = attackingPlayer.getBoard();
         Ship attackingShip = attackersBoard.getShip(shipID);
-        if(attackingShip == null || attackingPlayer.hasUsedSpecial() || !attackingShip.canSonar() || attackingShip.hasUsedAbility()) {
-            throw new InputException();
+        if(attackingShip == null) {
+            throw new InputException("Input exception on ping from "+shipID+": Ship is invalid!");
+        }
+        if(attackingPlayer.hasUsedSpecial()) {
+            throw new InputException("Input exception on ping from "+shipID+": You already used your special");
+        }
+        if(!attackingShip.canSonar()) {
+            throw new InputException("Input exception on ping from "+shipID+": This ship has no sonar");
+        }
+        if(attackingShip.hasUsedAbility()) {
+            throw new InputException("Input exception on ping from "+shipID+": This ship already used its ability");
         }
 
         boolean hadResources = attackingPlayer.takeResources(SONAR_COST);
         if (!hadResources) {
-            throw new ResourceException();
+            throw new ResourceException("Not enough resources to ping from "+shipID);
         }
 
         attackingPlayer.useSpecialAbility();
@@ -237,11 +271,11 @@ public class Ability {
 
         ArrayList<SonarReport> sonarReports = new ArrayList<SonarReport>();
         Board board = targetPlayer.getBoard();
-        int NECornerX = targetX - BURST_SHOT_RADIUS + 1;
-        int NECornerY = targetY - BURST_SHOT_RADIUS + 1;
+        int NECornerX = targetX - SONAR_RADIUS + 1;
+        int NECornerY = targetY - SONAR_RADIUS + 1;
 
-        for (int x = NECornerX; x < NECornerX + SONAR_RADIUS; x++) {
-            for (int y = NECornerY; y < NECornerY + SONAR_RADIUS; y++) {
+        for (int x = NECornerX; x < NECornerX + SONAR_DIAMETER; x++) {
+            for (int y = NECornerY; y < NECornerY + SONAR_DIAMETER; y++) {
                 pingCoordinate(board, sonarReports, targetX, targetY, x, y);
             }
         }
