@@ -25,7 +25,13 @@ public class GameLogger {
 			JSONObject obj = new JSONObject();
 			obj.put("size",Board.DEFAULT_WIDTH );
 			log(obj.toString());
-		} catch (IOException | JSONException e) {
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out
+					.println("Invalid log URL given, or bad JSON, no information will be saved!");
+			logFile = null;
+		}
+		catch (JSONException e) {
 			e.printStackTrace();
 			System.out
 					.println("Invalid log URL given, or bad JSON, no information will be saved!");
