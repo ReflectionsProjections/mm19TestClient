@@ -37,18 +37,20 @@ public class Engine{
 	public static final String MAINSHIP = "M";
 	public static final String PILOT = "P";
 	
+	public static final int turnLimit = 10000;
+	
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
 	 */
     public Engine(){
-    	players=new Player[2];
-    	players[0]=null;
-    	players[1]=null;
+    	players = new Player[2];
+    	players[0] = null;
+    	players[1] = null;
 
     	playerTokens = new String[2];
     	playerTokens[0] = "";
     	playerTokens[1] = "";
-    	turn=0;
+    	turn = 0;
     }
 	
     /**
@@ -123,11 +125,7 @@ public class Engine{
 		API.writePlayerResources(player.getPlayerID(), player.getResources());
 		API.writePlayerResponseCode(player.getPlayerID());
 		
-		if(turn==0){
-			turn=1;
-		} else{
-			turn=0;
-		}
+		turn++;
 		return player.getPlayerID();
 	}
 	
@@ -144,20 +142,20 @@ public class Engine{
 		} else {
 			playerID = 1;
 		}
-		if(playerID!=turn){
+		if(playerID!=turn%2){
 			API.writePlayerError(playerID, "It is not your turn!");
 			API.writePlayerResponseCode(playerID);
 			return false;
 		}
-		Player p=null;
-		Player otherP=null;
-		if(players[0].getPlayerID()==playerID){
-			p=players[0];
-			otherP=players[1];
+		Player p = null;
+		Player otherP = null;
+		if(players[0].getPlayerID() == playerID){
+			p = players[0];
+			otherP = players[1];
 		}
-		else if(players[1].getPlayerID()==playerID){
-			p=players[1];
-			otherP=players[0];
+		else if(players[1].getPlayerID() == playerID){
+			p = players[1];
+			otherP = players[0];
 		}
 //		if(p==null){
 //			//just got an invalid player ID
@@ -263,33 +261,37 @@ public class Engine{
 		if(!players[0].isAlive() && !players[1].isAlive()){
 			//Tie game (Is this even possible?)
 
-			API.hasWon(players[0].getPlayerID());
+			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
 			API.hasWon(players[0].getPlayerID());
 		} else if(!players[1].isAlive()){
 			//Player 1 wins
 			API.hasWon(players[1].getPlayerID());
+		} else if(turn>turnLimit){
+			//Tie game, break the tie
+			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
+			
 		} else{
 			//Send data to both players
 			int currPlayerID, opponentID;
 			Player opponent;
-			if(players[0].getPlayerID()==p.getPlayerID()){
-				currPlayerID=0;
-				opponentID=1;
-				opponent=players[1];
+			if(players[0].getPlayerID() == p.getPlayerID()){
+				currPlayerID = 0;
+				opponentID = 1;
+				opponent = players[1];
 			} else{
-				currPlayerID=1;
-				opponentID=0;
-				opponent=players[0];
+				currPlayerID = 1;
+				opponentID = 0;
+				opponent = players[0];
 			}
 			//reset player special
 			Ability.resetAbilityStates(players[currPlayerID]);
-			ArrayList<ShipData> data=new ArrayList<ShipData>();
+			ArrayList<ShipData> data = new ArrayList<ShipData>();
 			
             Position tempPos;
             String tempType;
-            ArrayList<Ship> ships=opponent.getBoard().getShips();
+            ArrayList<Ship> ships = opponent.getBoard().getShips();
 			for(Ship ship : ships){
 				tempType = null;
 				if(ship instanceof DestroyerShip){
@@ -299,14 +301,14 @@ public class Engine{
 				}else if(ship instanceof PilotShip){
 					tempType = PILOT;
 				}
-				String tempOrient="";
+				String tempOrient = "";
 				if(tempType != null){
 					if(opponent.getBoard().getShipPosition(ship.getID()).orientation == Position.Orientation.HORIZONTAL){
-						tempOrient="H";
+						tempOrient = "H";
 					}else{
-						tempOrient="V";
+						tempOrient = "V";
 					}
-					tempPos=opponent.getBoard().getShipPosition(ship.getID());
+					tempPos = opponent.getBoard().getShipPosition(ship.getID());
 					data.add(new ShipData(ship.getHealth(), ship.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
@@ -329,11 +331,7 @@ public class Engine{
 			API.writePlayerHits(opponentID, opponentHits);
 			API.writePlayerPings(opponentID, opponentSonar);
 			
-			if(turn==0){
-				turn=1;
-			} else{
-				turn=0;
-			}
+			turn++;
 		}
 	}
 	
@@ -358,14 +356,14 @@ public class Engine{
 				tempType = PILOT;
 			}
 			
-			String temporient="";
+			String temporient = "";
 			
 			if(tempType != null){
 				
 				if(p.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
-					temporient="H";
+					temporient = "H";
 				} else{
-					temporient="V";
+					temporient = "V";
 				}
 				tempPos=p.getBoard().getShipPosition(tempShip.getID());
 				data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
