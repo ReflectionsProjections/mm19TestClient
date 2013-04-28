@@ -23,10 +23,7 @@ public class GameLogger {
 			
 			// Logging the initial line for the visualizer
 			JSONObject obj = new JSONObject();
-			JSONObject boardConfig = new JSONObject();
-			boardConfig.put("width", Board.DEFAULT_WIDTH);
-			boardConfig.put("height", Board.DEFAULT_HEIGHT);
-			obj.put("boardConfiguration", boardConfig);
+			obj.put("size",Board.DEFAULT_WIDTH );
 			log(obj.toString());
 		} catch (IOException | JSONException e) {
 			e.printStackTrace();
