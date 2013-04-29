@@ -12,6 +12,7 @@ import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
 import mm19.server.API;
+import mm19.server.ServerTimerTask;
 import mm19.server.ShipData;
 
 
@@ -42,7 +43,7 @@ public class Engine{
 	public static final int TIMELIMIT = 10;
 	
 	/**
-	 * the constructor is called by the server (or API?) to start the game.
+	 * the constructor is called by the API to start the game.
 	 */
     public Engine(){
     	players = new Player[2];
@@ -257,8 +258,12 @@ public class Engine{
 	 */
 	public void timeout(){
 		System.out.println("timeout!");
+		int currPlayerID = turn%2;
+		int opponentID = (turn+1)%2;
 		Player p = players[turn % 2];
 		endofTurn(p, new ArrayList<ShipActionResult>(), new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
+		
+		API.sendTurn(currPlayerID);
 	}
 	
 	/**
@@ -273,17 +278,17 @@ public class Engine{
 		if(!players[0].isAlive() && !players[1].isAlive()){
 			//Tie game (Is this even possible?)
 
-			System.out.println("This is impossible");
 			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
+			System.out.println("P2 wins!");
 			API.hasWon(players[0].getPlayerID());
 		} else if(!players[1].isAlive()){
 			//Player 1 wins
+			System.out.println("P1 wins!");
 			API.hasWon(players[1].getPlayerID());
 		} else if(turn > TURNLIMIT){
 			//Tie game, break the tie
-			System.out.println("turn="+turn+"\nturnlimit="+TURNLIMIT);
 			System.out.println("Tie!");
 			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
 			
@@ -356,8 +361,8 @@ public class Engine{
 	
 	private ArrayList<ShipData> getShipData(Player p) {
 		
-		ArrayList<ShipData> data=new ArrayList<ShipData>();
-		ArrayList<Ship> ships=p.getBoard().getShips();
+		ArrayList<ShipData> data = new ArrayList<ShipData>();
+		ArrayList<Ship> ships = p.getBoard().getShips();
 		Ship tempShip;
 		Position tempPos;
 		String tempType;
