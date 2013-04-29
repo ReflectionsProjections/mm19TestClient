@@ -684,6 +684,7 @@ public class API {
 			writePlayer(1, "responseCode", -1);
 			send(0);
 			send(1);
+			
 			Server.winCondition(0);
 			return true;
 		} else if (PlayerID == 1) {
@@ -694,7 +695,7 @@ public class API {
             Server.winCondition(1);
 			return true;
 		}
-		return false;
+		throw new RuntimeException("There is no winner ????");
 	}
 
 	public static void printTurnToLog(int playerID) {
