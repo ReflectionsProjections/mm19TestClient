@@ -1,8 +1,8 @@
 package mm19.game;
 
 import java.util.ArrayList;
+import java.util.Timer;
 
-import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
 import mm19.game.board.Position;
@@ -23,7 +23,8 @@ import mm19.server.ShipData;
 public class Engine{
 	private Player[] players;
 	private String[] playerTokens;
-	private int turn;
+	private int turn = 0;
+	private Timer time;
 	public static final String SHOOT = "F";
 	public static final String BURST_SHOT = "BS";
 	public static final String SONAR = "S";
@@ -37,7 +38,8 @@ public class Engine{
 	public static final String MAINSHIP = "M";
 	public static final String PILOT = "P";
 	
-	public static final int turnLimit = 10000;
+	public static final int TURNLIMIT = 10000;
+	public static final int TIMELIMIT = 10;
 	
 	/**
 	 * the constructor is called by the server (or API?) to start the game.
@@ -91,11 +93,11 @@ public class Engine{
 				ships.add(tempShip);
 				positions.add(tempPos); 
 			} else{
-				API.writePlayerError(turn, "Unable to initialize ship "+i+" to type "+shipDatas.get(i).type);
+				API.writePlayerError(turn%2, "Unable to initialize ship "+i+" to type "+shipDatas.get(i).type);
 			}
 		}
 		if(ships.size() < shipDatas.size()) {
-			API.writePlayerResponseCode(turn);
+			API.writePlayerResponseCode(turn%2);
 			return -1;
 		}
 		
@@ -104,8 +106,8 @@ public class Engine{
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
 		
 		if (!(setupShips && player.isAlive())) {
-			API.writePlayerError(turn, "Unable to setup ships due to bad positions");
-			API.writePlayerResponseCode(turn);
+			API.writePlayerError(turn%2, "Unable to setup ships due to bad positions");
+			API.writePlayerResponseCode(turn%2);
 			return -1;
 			}
 		if(players[0] == null) {
@@ -126,6 +128,10 @@ public class Engine{
 		API.writePlayerResponseCode(player.getPlayerID());
 		
 		turn++;
+		if(turn > 1){
+			time = new Timer();
+			time.schedule(new Timeout(this), TIMELIMIT*1000);
+		}
 		return player.getPlayerID();
 	}
 	
@@ -135,6 +141,10 @@ public class Engine{
 	 * Afterwards, it tells the API to send the data back
 	 */
 	public boolean playerTurn(String playerToken, ArrayList<Action> actions){
+		//Cancel the timeout
+		time.cancel();
+		time.purge();
+		
 		//Check for valid playerID
 		int playerID;
 		if(playerTokens[0].equals(playerToken)) {
@@ -142,7 +152,7 @@ public class Engine{
 		} else {
 			playerID = 1;
 		}
-		if(playerID!=turn%2){
+		if(playerID != turn %2 ){
 			API.writePlayerError(playerID, "It is not your turn!");
 			API.writePlayerResponseCode(playerID);
 			return false;
@@ -250,6 +260,16 @@ public class Engine{
 	}
 	
 	/**
+	 * This function is called when the player fails to send their turn in a reasonable amount of time.
+	 * It calls endofTurn as if a turn was taken, but without doing anything else
+	 */
+	public void timeout(){
+		System.out.println("timeout!");
+		Player p = players[turn % 2];
+		endofTurn(p, new ArrayList<ShipActionResult>(), new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
+	}
+	
+	/**
 	 * This function will check for victory conditions
 	 * Then return to the player the results
 	 * TODO This function seems very broken, and needs to be gone over again very carefully.
@@ -261,6 +281,7 @@ public class Engine{
 		if(!players[0].isAlive() && !players[1].isAlive()){
 			//Tie game (Is this even possible?)
 
+			System.out.println("This is impossible");
 			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
@@ -268,8 +289,10 @@ public class Engine{
 		} else if(!players[1].isAlive()){
 			//Player 1 wins
 			API.hasWon(players[1].getPlayerID());
-		} else if(turn>turnLimit){
+		} else if(turn > TURNLIMIT){
 			//Tie game, break the tie
+			System.out.println("turn="+turn+"\nturnlimit="+TURNLIMIT);
+			System.out.println("Tie!");
 			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
 			
 		} else{
@@ -332,6 +355,10 @@ public class Engine{
 			API.writePlayerPings(opponentID, opponentSonar);
 			
 			turn++;
+			
+			//Start the timer for the next turn
+			time = new Timer();
+			time.schedule(new Timeout(this), TIMELIMIT*1000);
 		}
 	}
 	
