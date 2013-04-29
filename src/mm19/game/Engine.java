@@ -180,79 +180,71 @@ public class Engine{
 		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
 		
 		for(Action a: actions){
-			switch(a.actionID){
-				case SHOOT:
-					try{
-						HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-						results.add(new ShipActionResult(a.shipID, "S"));
-						hits.add(hitResponse);
-						opponentHits.add(hitResponse);
-					} catch(InputException e){
-						results.add(new ShipActionResult(a.shipID, "I"));
-						API.writePlayerError(playerID, e.getMessage());
-					} catch(ResourceException e){
-						results.add(new ShipActionResult(a.shipID, "R"));
-						API.writePlayerError(playerID, e.getMessage());
-					}
-					break;
-				case BURST_SHOT:
-					try{
-						ArrayList<HitReport> burstResponse = 
-				        Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-						results.add(new ShipActionResult(a.shipID, "S"));
-						for(HitReport h : burstResponse){
-							if(h.shotSuccessful){
-								opponentHits.add(h);
-							}
+			if(a.actionID.equals(SHOOT)) {
+				try{
+					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					results.add(new ShipActionResult(a.shipID, "S"));
+					hits.add(hitResponse);
+					opponentHits.add(hitResponse);
+				} catch(InputException e){
+					results.add(new ShipActionResult(a.shipID, "I"));
+					API.writePlayerError(playerID, e.getMessage());
+				} catch(ResourceException e){
+					results.add(new ShipActionResult(a.shipID, "R"));
+					API.writePlayerError(playerID, e.getMessage());
+				}
+			} else if (a.actionID.equals(BURST_SHOT)) { 
+				try{
+					ArrayList<HitReport> burstResponse = 
+			        Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					results.add(new ShipActionResult(a.shipID, "S"));
+					for(HitReport h : burstResponse){
+						if(h.shotSuccessful){
+							opponentHits.add(h);
 						}
-						//hits.addAll(burstResponse);
-					} catch(InputException e){
-						results.add(new ShipActionResult(a.shipID, "I"));
-						API.writePlayerError(playerID, e.getMessage());
-					} catch(ResourceException e){
-						results.add(new ShipActionResult(a.shipID, "R"));
-						API.writePlayerError(playerID, e.getMessage());
 					}
-					break;
-				case SONAR:
-					try{
-						ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-						results.add(new ShipActionResult(a.shipID, "S"));
-						pings.addAll(sonarResponse);
-					} catch(InputException e){
-						results.add(new ShipActionResult(a.shipID, "I"));
-						API.writePlayerError(playerID, e.getMessage());
-					} catch(ResourceException e){
-						results.add(new ShipActionResult(a.shipID, "R"));
-						API.writePlayerError(playerID, e.getMessage());
-					}
-					break;
-				case MOVE_Horizontal:
-					try{
-						boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
-						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(InputException e){
-						results.add(new ShipActionResult(a.shipID, "I"));
-						API.writePlayerError(playerID, e.getMessage());
-					} catch(ResourceException e){
-						results.add(new ShipActionResult(a.shipID, "R"));
-						API.writePlayerError(playerID, e.getMessage());
-					}
-					break;
-				case MOVE_Vertical:
-					try{
-						boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
-						results.add(new ShipActionResult(a.shipID, "S"));
-					} catch(InputException e){
-						results.add(new ShipActionResult(a.shipID, "I"));
-						API.writePlayerError(playerID, e.getMessage());
-					} catch(ResourceException e){
-						results.add(new ShipActionResult(a.shipID, "R"));
-						API.writePlayerError(playerID, e.getMessage());
-					}
-					break;
-				default:
-					break;
+					//hits.addAll(burstResponse);
+				} catch(InputException e){
+					results.add(new ShipActionResult(a.shipID, "I"));
+					API.writePlayerError(playerID, e.getMessage());
+				} catch(ResourceException e){
+					results.add(new ShipActionResult(a.shipID, "R"));
+					API.writePlayerError(playerID, e.getMessage());
+				}
+			} else if (a.actionID.equals(SONAR)) {
+				try{
+					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
+					results.add(new ShipActionResult(a.shipID, "S"));
+					pings.addAll(sonarResponse);
+				} catch(InputException e){
+					results.add(new ShipActionResult(a.shipID, "I"));
+					API.writePlayerError(playerID, e.getMessage());
+				} catch(ResourceException e){
+					results.add(new ShipActionResult(a.shipID, "R"));
+					API.writePlayerError(playerID, e.getMessage());
+				}
+			} else if (a.actionID.equals(MOVE_Horizontal)) {
+				try{
+					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
+					results.add(new ShipActionResult(a.shipID, "S"));
+				} catch(InputException e){
+					results.add(new ShipActionResult(a.shipID, "I"));
+					API.writePlayerError(playerID, e.getMessage());
+				} catch(ResourceException e){
+					results.add(new ShipActionResult(a.shipID, "R"));
+					API.writePlayerError(playerID, e.getMessage());
+				}
+			} else if (a.actionID.equals(MOVE_Vertical)) {
+				try{
+					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
+					results.add(new ShipActionResult(a.shipID, "S"));
+				} catch(InputException e){
+					results.add(new ShipActionResult(a.shipID, "I"));
+					API.writePlayerError(playerID, e.getMessage());
+				} catch(ResourceException e){
+					results.add(new ShipActionResult(a.shipID, "R"));
+					API.writePlayerError(playerID, e.getMessage());
+				}
 			}
 		}
 		endofTurn(p, results, hits, opponentHits, pings);
