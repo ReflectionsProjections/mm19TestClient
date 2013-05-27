@@ -3,6 +3,7 @@ package mm19.game;
 import java.util.ArrayList;
 import java.util.Timer;
 
+import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
 import mm19.game.board.Position;
@@ -54,6 +55,16 @@ public class Engine{
     	playerTokens[0] = "";
     	playerTokens[1] = "";
     	turn = 0;
+    }
+
+    private void handleEngineException(EngineException ee, int playerID, Action action, ArrayList<ShipActionResult> turnResults) {
+        if(ee instanceof InputException) {
+            turnResults.add(new ShipActionResult(action.shipID, "I"));
+            API.writePlayerError(playerID, ee.getMessage());
+        } else if (ee instanceof ResourceException) {
+            turnResults.add(new ShipActionResult(action.shipID, "R"));
+            API.writePlayerError(playerID, ee.getMessage());
+        }
     }
 	
     /**
@@ -187,12 +198,8 @@ public class Engine{
 					results.add(new ShipActionResult(a.shipID, "S"));
 					hits.add(hitResponse);
 					opponentHits.add(hitResponse);
-				} catch(InputException e){
-					results.add(new ShipActionResult(a.shipID, "I"));
-					API.writePlayerError(playerID, e.getMessage());
-				} catch(ResourceException e){
-					results.add(new ShipActionResult(a.shipID, "R"));
-					API.writePlayerError(playerID, e.getMessage());
+				} catch(EngineException ee){
+                    handleEngineException(ee, playerID, a, results);
 				}
 			} else if (a.actionID.equals(BURST_SHOT)) { 
 				try{
@@ -205,47 +212,31 @@ public class Engine{
 						}
 					}
 					//hits.addAll(burstResponse);
-				} catch(InputException e){
-					results.add(new ShipActionResult(a.shipID, "I"));
-					API.writePlayerError(playerID, e.getMessage());
-				} catch(ResourceException e){
-					results.add(new ShipActionResult(a.shipID, "R"));
-					API.writePlayerError(playerID, e.getMessage());
-				}
+				} catch(EngineException ee){
+                    handleEngineException(ee, playerID, a, results);
+                }
 			} else if (a.actionID.equals(SONAR)) {
 				try{
 					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
 					results.add(new ShipActionResult(a.shipID, "S"));
 					pings.addAll(sonarResponse);
-				} catch(InputException e){
-					results.add(new ShipActionResult(a.shipID, "I"));
-					API.writePlayerError(playerID, e.getMessage());
-				} catch(ResourceException e){
-					results.add(new ShipActionResult(a.shipID, "R"));
-					API.writePlayerError(playerID, e.getMessage());
-				}
+				} catch(EngineException ee){
+                    handleEngineException(ee, playerID, a, results);
+                }
 			} else if (a.actionID.equals(MOVE_Horizontal)) {
 				try{
 					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 					results.add(new ShipActionResult(a.shipID, "S"));
-				} catch(InputException e){
-					results.add(new ShipActionResult(a.shipID, "I"));
-					API.writePlayerError(playerID, e.getMessage());
-				} catch(ResourceException e){
-					results.add(new ShipActionResult(a.shipID, "R"));
-					API.writePlayerError(playerID, e.getMessage());
-				}
+				} catch(EngineException ee){
+                    handleEngineException(ee, playerID, a, results);
+                }
 			} else if (a.actionID.equals(MOVE_Vertical)) {
 				try{
 					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 					results.add(new ShipActionResult(a.shipID, "S"));
-				} catch(InputException e){
-					results.add(new ShipActionResult(a.shipID, "I"));
-					API.writePlayerError(playerID, e.getMessage());
-				} catch(ResourceException e){
-					results.add(new ShipActionResult(a.shipID, "R"));
-					API.writePlayerError(playerID, e.getMessage());
-				}
+				} catch(EngineException ee){
+                    handleEngineException(ee, playerID, a, results);
+                }
 			}
 		}
 		endofTurn(p, results, hits, opponentHits, pings);
