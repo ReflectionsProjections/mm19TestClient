@@ -57,6 +57,13 @@ public class Engine{
     	turn = 0;
     }
 
+    /**
+     * Helper for handling the exceptions thrown by the Ability class
+     * @param ee The EngineException thrown
+     * @param playerID The current player's id
+     * @param action The action attempted when the exception was thrown.
+     * @param turnResults The results object to update
+     */
     private void handleEngineException(EngineException ee, int playerID, Action action, ArrayList<ShipActionResult> turnResults) {
         if(ee instanceof InputException) {
             turnResults.add(new ShipActionResult(action.shipID, "I"));
