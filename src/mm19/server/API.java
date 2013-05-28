@@ -29,6 +29,11 @@ public class API {
 	private static Engine game;
 	private static int ID = 0;
 
+    /**
+     * TODO Description goes here
+     *
+     * @return Boolean that always returns true for some reason TODO See if this can be changed to a void function
+     */
     public static boolean initAPI() {
 		playerTurnObj = new JSONObject[Constants.PLAYER_COUNT];
         playerTokens = new String[Constants.PLAYER_COUNT];
@@ -43,8 +48,17 @@ public class API {
 		return true;
 	}
 
-    //TODO: Determine better name for method -Eric
+
+
+    /**
+     * TODO Description goes here
+     *
+     * @param obj TODO: This file needs more javadoc
+     * @param playerToken TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean newData(JSONObject obj, String playerToken) {
+        //TODO: Determine better name for method -Eric
 		int playerID;
 		String playerName;
 		JSONObject mainShipJSON;
@@ -105,6 +119,12 @@ public class API {
 		return false;
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param obj TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean decodeTurn(JSONObject obj) {
 		// sanity check
         for (String token : playerTokens) {
@@ -119,6 +139,7 @@ public class API {
         String playerToken;
 		try {
             if(obj.has("playerToken") && obj.has("shipActions")) {
+                //TODO Create method getPlayerByToken
                 playerToken = obj.getString("playerToken");
                 for(int i = 0; i < Constants.PLAYER_COUNT; i++) {
                     if(playerToken.equals(playerTokens[i])) {
@@ -152,6 +173,7 @@ public class API {
 
                 Timer t = new Timer();
                 ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+                //TODO replace number with constant
                 t.schedule(new ServerTimerTask(), 50);
             }
             return true;
@@ -162,6 +184,12 @@ public class API {
 		return false;
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param obj TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	private static ShipData initShip(JSONObject obj) {
 		int health;
 		String type;
@@ -177,6 +205,7 @@ public class API {
                 orientation = obj.getString("orientation");
 
                 health = -1;
+                //TODO Try to find a better way to handle this
                 if(type.equals("P")) {
                     health = PilotShip.HEALTH;
                 } else if(type.equals("D")) {
@@ -191,7 +220,6 @@ public class API {
 			if (!type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE && yCoord > -1
                     && yCoord < Constants.BOARD_SIZE && !orientation.equals("") && health != -1) {
 
-                // Success
                 return new ShipData(health, ID++, type, xCoord, yCoord, orientation);
 			}
 
@@ -199,34 +227,34 @@ public class API {
 			e.printStackTrace();
 		}
 
-		// Failure
 		return null;
 
 	}
 	
 	/**
 	 * Handle setting up the next turn once this player's turn has ended.
-	 * @param currPlayerID
+     *
+	 * @param currPlayerID TODO: This file needs more javadoc
 	 */
 	public static void sendTurn(int currPlayerID){
 		writePlayer(currPlayerID, "playerToken", playerTokens[currPlayerID]);
 		writePlayer(currPlayerID, "playerName", playerNames[currPlayerID]);
 		printTurnToLog(currPlayerID);
 		send(currPlayerID);
-		
-		int opponentID = 1;
-		if (currPlayerID == 0) opponentID = 1;
-		if (currPlayerID == 1) opponentID = 0;
-		
+
+		int opponentID = Engine.getOpponentID(currPlayerID);
+
 		Timer t = new Timer();
 		ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+        //TODO Make constant for number
 		t.schedule(new ServerTimerTask(), 50);
 	}
 
 	/**
-	 * @param obj
-	 * @return returns a valid ship if the given JSONObject contains such, null
-	 *         otherwise
+     * TODO Description goes here
+     *
+	 * @param obj TODO: This file needs more javadoc
+	 * @return A valid ShipData if the given JSONObject contains such, null otherwise
 	 */
 	private static ShipData getShip(JSONObject obj) {
 		int health;
@@ -250,11 +278,10 @@ public class API {
                 return null;
             }
 
-            //TODO: Determine why ID must not be 0. -Eric
+            //TODO: Determine why ID must not be 0.  0 seems like a reasonable value. -Eric
 			if (health != 0 && ID != 0 && type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
                     && yCoord  > -1 && yCoord < Constants.BOARD_SIZE && !orientation.equals("")) {
 
-                // Success
                 return new ShipData(health, ID, type, xCoord, yCoord, orientation);
 			}
 		} catch (JSONException e) {
@@ -266,19 +293,21 @@ public class API {
 	}
 
 	/**
-	 * @param jsonArray
-	 * @return returns the full arrayList of 20 valid ships if the given
-	 *         JSONArray contains such, any error will cause this function
-	 *         return null
+     * TODO Description goes here
+     *
+	 * @param jsonArray TODO: This file needs more javadoc
+	 * @return ArrayList of 20 valid ships if the given JSONArray contains
+     *          such, any error will cause this function return null
 	 */
 	private static ArrayList<ShipData> getShipList(JSONArray jsonArray) {
-
+        //TODO What is the significance of 20?  There are only 10 ships in the game.  Also, magic number.
 		if (jsonArray.length() != 19)
 			return null;
 		int length = jsonArray.length();
 		ArrayList<ShipData> list = new ArrayList<ShipData>();
 		ShipData tempShip;
 		JSONObject tempJson;
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
 			try {
@@ -295,8 +324,10 @@ public class API {
 	}
 
 	/**
-	 * @param obj
-	 * @return - returns the associated Action in the given JSON object contains
+     * TODO Description goes here
+     *
+	 * @param obj TODO: This file needs more javadoc
+	 * @return - returns the associated Action if the given JSON object contains
 	 *         a valid Action, null otherwise
 	 */
 	private static Action getAction(JSONObject obj) {
@@ -324,15 +355,17 @@ public class API {
 	}
 
 	/**
-	 * @param jsonArray
-	 * @return returns the valid List of Actions if the given JSONarray contains
-	 *         such, and null otherwise
+     * TODO Description goes here
+     *
+	 * @param jsonArray TODO: This file needs more javadoc
+	 * @return An ArrayList of Actions if the given JSONArray contains such, null otherwise
 	 */
 	private static ArrayList<Action> getActionList(JSONArray jsonArray) {
 		int length = jsonArray.length();
 		ArrayList<Action> list = new ArrayList<Action>();
 		Action tempAction;
 		JSONObject tempJson;
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
 			try {
@@ -348,30 +381,33 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param ships
-	 *            - array list of current player ships/status
-	 * @return - true if successful write
+     * TODO Description goes here
+     *
+	 * @param status enum that tells us to write to player1, player2 or both
+	 * @param ships ArrayList of current player's shipData
+	 * @return - boolean indicating if write was successful
 	 */
 	public static boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
 		JSONArray shipsJson = new JSONArray();
 		JSONObject tempShip;
 		int length = ships.size();
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
+            //TODO Please don't assign in the if conditional...
 			if ((tempShip = makeShipJSON(ships.get(length))) != null)
 				shipsJson.put(tempShip);
 		}
-		if (writePlayer(status, "ships", (Object) shipsJson))
-			return true;
-		return false;
+
+		boolean writeSuccessful = writePlayer(status, "ships", (Object) shipsJson);
+		return writeSuccessful;
 	}
 
 	/**
-	 * @param data
-	 *            - the data of a given ship
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param data the data of a given ship
+	 * @return JSONObject containing said data
 	 */
 	private static JSONObject makeShipJSON(ShipData data) {
 		JSONObject tempShip = new JSONObject();
@@ -389,7 +425,14 @@ public class API {
 		}
 		return tempShip;
 	}
-	
+
+    /**
+     * TODO Description goes here
+     *
+     * @param status TODO: This file needs more javadoc
+     * @param message TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean writePlayerError(int status, String message) {
 		try {
 			playerTurnObj[status].append("error", message);
@@ -399,9 +442,18 @@ public class API {
 		}
 		return true;
 	}
-	
+
+    /**
+     * TODO Description goes here
+     *
+     * @param status TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean writePlayerResponseCode(int status) {
 		try {
+
+            //TODO Rearrange code so there is only a since writePlayer call.
+            //TODO Store result of writePlayer in well named boolean variable and return that
 			if(playerTurnObj[status].has("error")) {
 				int length = playerTurnObj[status].getJSONArray("error").length();
 				if(length > 0) {
@@ -418,57 +470,71 @@ public class API {
 		}
 		return false;
 	}
-	
+
+    /**
+     * TODO Description goes here
+     *
+     * @param status TODO: This file needs more javadoc
+     * @param resources TODO: This file needs more javadoc
+     * @return TODO: This file needs more javadoc
+     */
 	public static boolean writePlayerResources(int status, int resources) {
-		return writePlayer(status, "resources", status);
+        //TODO Determine if the input to writePlayer given here is a bug
+		boolean writeSuccessful = writePlayer(status, "resources", status);
+        return writeSuccessful;
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param hits
-	 *            - array list of current player hit reports
-	 * @return - true if successful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param hits array list of current player hit reports
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerHits(int status, ArrayList<HitReport> hits) {
+	public static boolean writePlayerHits(int playerID, ArrayList<HitReport> hits) {
 		JSONArray hitsJson = new JSONArray();
 		JSONObject tempHit;
 		int length = hits.size();
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
+            //TODO Please don't assign in the if conditional...
 			if ((tempHit = makeHitJSON(hits.get(length))) != null)
 				hitsJson.put(tempHit);
 		}
-		if (writePlayer(status, "hitReport", hitsJson))
-			return true;
-		return false;
+
+		boolean writeSuccessful = writePlayer(playerID, "hitReport", hitsJson);
+		return writeSuccessful;
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param hits
-	 *            - array list of current player hit reports
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param hits array list of current player hit reports
+	 * @return Boolean that indicates if write was successful
 	 */
-	public static boolean writePlayerEnemyHits(int status, ArrayList<HitReport> hits) {
+	public static boolean writePlayerEnemyHits(int playerID, ArrayList<HitReport> hits) {
 		JSONArray hitsJson = new JSONArray();
 		JSONObject tempHit;
 		int length = hits.size();
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
+            //TODO Please don't assign in the if conditional...
 			if ((tempHit = makeHitJSON(hits.get(length))) != null)
 				hitsJson.put(tempHit);
 		}
-		if (writePlayer(status, "enemyHitReport", hitsJson))
-			return true;
-		return false;
+
+		boolean writeSuccessful = writePlayer(playerID, "enemyHitReport", hitsJson);
+		return writeSuccessful;
 	}
 
 	/**
-	 * @param report
-	 *            - the data of a given hitreport
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param report the data of a given HitReport
+	 * @return JSONObject containing the HitReport's data
 	 */
 	private static JSONObject makeHitJSON(HitReport report) {
 		JSONObject tempHit = new JSONObject();
@@ -485,34 +551,40 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param pings
-	 *            - array list of current player pings
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID Player to write to
+	 * @param pings array list of current player pings
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerPings(int status, ArrayList<SonarReport> pings) {
+	public static boolean writePlayerPings(int playerID, ArrayList<SonarReport> pings) {
 		JSONArray pingsJson = new JSONArray();
+
+        //TODO Naming: tempPing...
 		JSONObject tempPing;
 		int length = pings.size();
+        //TODO Change to for loop
 		while (length > 0) {
 			length--;
+            //TODO Please don't assign in the if conditional...
 			if ((tempPing = makePingJSON(pings.get(length))) != null)
 				pingsJson.put(tempPing);
 		}
-		if (writePlayer(status, "pingReport", pingsJson))
-			return true;
 
-		return false;
+        boolean writeSuccessful = writePlayer(playerID, "pingReport", pingsJson);
+        return writeSuccessful;
 	}
 
 	/**
-	 * @param ping
-	 *            - the data of a given ping
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param ping A SonarReport
+	 * @return JSONObject containing the SonarReport's data
 	 */
 	private static JSONObject makePingJSON(SonarReport ping) {
 		JSONObject tempPing = new JSONObject();
+
+        //TODO Naming: ping and tempPing...
 
 		try {
 			tempPing.put("distance", ping.dist);
@@ -525,35 +597,39 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param results
-	 *            - array list of current action results
-	 * @return - true if sucessful write
+     * TODO Description goes here
+     *
+	 * @param playerID player to write to
+	 * @param results array list of current action results
+	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerResults(int status,
-			ArrayList<ShipActionResult> results) {
+	public static boolean writePlayerResults(int playerID, ArrayList<ShipActionResult> results) {
 		JSONArray resultsJson = new JSONArray();
+        //TODO Naming: results and tempResult...
 		JSONObject tempResult;
 		int length = results.size();
+        //TODO change to for loop
 		while (length > 0) {
 			length--;
+            //TODO Please don't assign in the if conditional...
 			if ((tempResult = makeResultJSON(results.get(length))) != null)
 				resultsJson.put(tempResult);
 		}
-		if (writePlayer(status, "shipActionResults", (Object) resultsJson))
-			return true;
 
-		return false;
+        boolean writeSuccessful = writePlayer(playerID, "shipActionResults", resultsJson);
+	    return writeSuccessful;
 	}
 
 	/**
-	 * @param result
-	 *            - the data of a given result
-	 * @return - a jsonobject containing said data
+     * TODO Description goes here
+     *
+	 * @param result A ShipActionResult
+	 * @return JSONObject containing the ShipActionResult's data
 	 */
 	private static JSONObject makeResultJSON(ShipActionResult result) {
-		JSONObject tempResult = new JSONObject();
+        //TODO Rename function
+        //TODO Naming: result and tempResult...
+        JSONObject tempResult = new JSONObject();
 
 		try {
 			tempResult.put("ID", result.shipID);
@@ -567,52 +643,41 @@ public class API {
 	
 	/**
 	 * Notifies the player that their turn is about to begin.
-	 * @param status
+     *
+	 * @param playerID Player to notify
 	 */
-	public static void notifyTurn(int status) {
-		writePlayer(status, "error", new JSONArray());
-		writePlayer(status, "responseCode", 100);
-		writePlayer(status, "playerName", playerNames[status]);
-		writePlayer(status, "playerToken", playerTokens[status]);
-		writePlayer(status, "shipActionResults", new JSONArray());
-		writePlayer(status, "hitReport", new JSONArray());
+	public static void notifyTurn(int playerID) {
+        //TODO Create constants for strings and codes
+		writePlayer(playerID, "error", new JSONArray());
+		writePlayer(playerID, "responseCode", 100);
+		writePlayer(playerID, "playerName", playerNames[playerID]);
+		writePlayer(playerID, "playerToken", playerTokens[playerID]);
+		writePlayer(playerID, "shipActionResults", new JSONArray());
+		writePlayer(playerID, "hitReport", new JSONArray());
 		
-		if(!playerTurnObj[status].has("ships")) {
-			writePlayer(status, "ships", new JSONArray());
+		if(!playerTurnObj[playerID].has("ships")) {
+			writePlayer(playerID, "ships", new JSONArray());
 		}
-		if(!playerTurnObj[status].has("pingReport")) {
-			writePlayer(status, "pingReport", new JSONArray());
+		if(!playerTurnObj[playerID].has("pingReport")) {
+			writePlayer(playerID, "pingReport", new JSONArray());
 		}
-		send(status);
+		send(playerID);
 	}
 
 	// TODO turn interuppts
-	// TODO status enum creation
+
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @param string
-	 *            - key to what we're writing
-	 * @param obj
-	 *            - object that we're writing
+     * TODO Description goes here
+     *
+	 * @param playerID player to write to
+	 * @param string key to what we're writing
+	 * @param obj object that we're writing
+     * @return Boolean that indicates if write was successful
 	 */
-	private static boolean writePlayer(int status, String string, Object obj) {
-        //TODO: Generalize to remove code duplication
+	private static boolean writePlayer(int playerID, String string, Object obj) {
+        //TODO Naming: string and obj...
 		try {
-			switch (status) {
-			case 0: // append to player 1
-				playerTurnObj[status].put(string, obj);
-				break;
-			case 1: // append to player 2
-				playerTurnObj[status].put(string, obj);
-				break;
-			case 2: // append to both
-				playerTurnObj[0].put(string, obj);
-				playerTurnObj[1].put(string, obj);
-				break;
-			default:
-				return false;
-			}
+			playerTurnObj[playerID].put(string, obj);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
@@ -621,44 +686,25 @@ public class API {
 	}
 
 	/**
-	 * @param status
-	 *            - enum that tells us to write to player1, player2 or both
-	 * @return - true if successful send
+     * TODO Description goes here
+     *
+	 * @param playerID Player to send stored data to
 	 */
-	
-	public static boolean send(int status) {
-		//TODO: Generalize to remove code duplication
-		switch (status) {
-            // send to player 1
-            case 0:
-                Server.sendPlayer(playerTurnObj[status], playerTokens[status]);
-                playerTurnObj[status] = new JSONObject();
-                break;
-
-            // send to player 2
-            case 1:
-                Server.sendPlayer(playerTurnObj[status], playerTokens[status]);
-                playerTurnObj[status] = new JSONObject();
-                break;
-
-            // append to both
-            case 2:
-                Server.sendPlayer(playerTurnObj[0], playerTokens[0]);
-                playerTurnObj[0] = new JSONObject();
-                Server.sendPlayer(playerTurnObj[1], playerTokens[1]);
-                playerTurnObj[1] = new JSONObject();
-                break;
-
-            default:
-                return false;
-		}
-		
-		return true;
+	public static void send(int playerID) {
+        Server.sendPlayer(playerTurnObj[playerID], playerTokens[playerID]);
+        playerTurnObj[playerID] = new JSONObject();
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID Player that won
+     * @return Boolean that always returns true for some reason TODO See if this can be changed to a void function
+     */
 	public static boolean hasWon(int playerID) {
         int opponentID = Engine.getOpponentID(playerID);
 
+        //TODO Create Constants for codes and strings
         writePlayer(playerID, "responseCode", 9001);
         writePlayer(opponentID, "responseCode", -1);
         send(playerID);
@@ -668,6 +714,11 @@ public class API {
         return true;
 	}
 
+    /**
+     * TODO Description goes here
+     *
+     * @param playerID Player whose turn is sent to visualizer
+     */
 	public static void printTurnToLog(int playerID) {
 		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
 	}

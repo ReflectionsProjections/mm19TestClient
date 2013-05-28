@@ -248,21 +248,20 @@ public class Engine{
                 }
 			}
 		}
-		endofTurn(player, turnResults, hits, opponentHits, pings);
+		endOfTurn(player, turnResults, hits, opponentHits, pings);
 		return true;
 	}
 	
 	/**
 	 * This function is called when the player fails to send their turn in a reasonable amount of time.
-	 * It calls endofTurn as if a turn was taken, but without doing anything else
+	 * It calls endOfTurn as if a turn was taken, but without doing anything else
 	 */
 	public void timeout(){
 		System.out.println("timeout!");
-        //TODO: Get rid of magic numbers.
-		int currPlayerID = turn%2;
-		int opponentID = (turn+1)%2;
-		Player p = players[turn % 2];
-		endofTurn(p, new ArrayList<ShipActionResult>(), new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
+		int currPlayerID = turn % Constants.PLAYER_COUNT;
+		int opponentID = getOpponentID(currPlayerID);
+		Player player = players[currPlayerID];
+		endOfTurn(player, new ArrayList<ShipActionResult>(), new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
 		
 		API.sendTurn(currPlayerID);
 	}
@@ -275,7 +274,7 @@ public class Engine{
 	 * @param hits
 	 * @param sonar
 	 */
-	public void endofTurn(Player player, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
+	public void endOfTurn(Player player, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
         //TODO: generalize...
 		if(!players[0].isAlive() && !players[1].isAlive()){
 			API.hasWon(Ability.breakTie(players[0], players[1]).getPlayerID());
