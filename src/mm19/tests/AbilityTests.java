@@ -3,7 +3,7 @@ import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
 import mm19.game.Ability;
-import mm19.game.Engine;
+import mm19.game.Constants;
 import mm19.game.HitReport;
 import mm19.game.board.Board;
 import mm19.game.board.Position;
@@ -55,7 +55,7 @@ public class AbilityTests {
     }
     
     private Player initializePlayer(ArrayList<Ship> ships, ArrayList<Position> positions) {
-        Player player = new Player(Engine.DEFAULT_RESOURCES);
+        Player player = new Player(Constants.STARTING_RESOURCES);
         
         Ability.setupBoard(player, ships, positions);
 
@@ -95,7 +95,7 @@ public class AbilityTests {
                 + 2*DestroyerShip.RESOURCES_GENERATED
                 + 2*PilotShip.RESOURCES_GENERATED;
         Ability.gatherResources(attacker);
-        assertEquals(Engine.DEFAULT_RESOURCES + resourcesWithAllShips, attacker.getResources());
+        assertEquals(Constants.STARTING_RESOURCES + resourcesWithAllShips, attacker.getResources());
 
         int resourcesWithAllButOnePilot = 1*MainShip.RESOURCES_GENERATED
                 + 2*DestroyerShip.RESOURCES_GENERATED
@@ -103,7 +103,7 @@ public class AbilityTests {
 
         defender.getBoard().removeShip(PilotShip.LENGTH-1,4);
         Ability.gatherResources(defender);
-        assertEquals(Engine.DEFAULT_RESOURCES + resourcesWithAllButOnePilot, defender.getResources());
+        assertEquals(Constants.STARTING_RESOURCES + resourcesWithAllButOnePilot, defender.getResources());
     }
 
     @Test
@@ -151,7 +151,7 @@ public class AbilityTests {
         assertNotNull("BrokenTest: Test can not continue because attacker has no ships with shoot ability", attackerShip);
 
         //Test not enough resources
-        attacker.takeResources(Engine.DEFAULT_RESOURCES);
+        attacker.takeResources(Constants.STARTING_RESOURCES);
         attacker.giveResources(Ability.MISSILE_COST - 1);
 
         try {

@@ -4,11 +4,9 @@ import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
 import mm19.game.Action;
 import mm19.game.Engine;
-import mm19.game.board.Position;
 import mm19.server.API;
 import mm19.server.ShipData;
 import static org.junit.Assert.*;
@@ -86,22 +84,22 @@ public class EngineTests {
 		
 		public static ArrayList<ShipData> genPlayer(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.MAINSHIP, 6, 6, "H"));
+			shipData.add(new ShipData(0, 0, Engine.MAIN_SHIP, 6, 6, "H"));
 
-			shipData.add(new ShipData(0, 1, Engine.DESTROYER, 4, 4, "H"));
-			shipData.add(new ShipData(0, 2, Engine.PILOT, 2, 2, "H"));
+			shipData.add(new ShipData(0, 1, Engine.DESTROYER_SHIP, 4, 4, "H"));
+			shipData.add(new ShipData(0, 2, Engine.PILOT_SHIP, 2, 2, "H"));
 
 			return shipData;
 		}
 		public static ArrayList<ShipData> genBrokenPlayer(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.MAINSHIP, 0, 0, "H"));
-			shipData.add(new ShipData(0, 0, Engine.DESTROYER, 4, 4, "H"));
+			shipData.add(new ShipData(0, 0, Engine.MAIN_SHIP, 0, 0, "H"));
+			shipData.add(new ShipData(0, 0, Engine.DESTROYER_SHIP, 4, 4, "H"));
 			return shipData;
 		}
 		public static ArrayList<ShipData> genNoMainShip(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.DESTROYER, 4, 4, "H"));
+			shipData.add(new ShipData(0, 0, Engine.DESTROYER_SHIP, 4, 4, "H"));
 			return shipData;
 		}
 

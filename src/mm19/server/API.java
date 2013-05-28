@@ -3,11 +3,7 @@ package mm19.server;
 import java.util.ArrayList;
 import java.util.Timer;
 
-import mm19.game.Action;
-import mm19.game.Engine;
-import mm19.game.HitReport;
-import mm19.game.ShipActionResult;
-import mm19.game.SonarReport;
+import mm19.game.*;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
@@ -25,82 +21,81 @@ import org.json.JSONObject;
  * 
  */
 public class API {
+    //TODO: This file needs more javadoc
 
 	private static JSONObject[] playerTurnObj;
-	private static String[] playerToken;
-	private static String[] playerName;
+	private static String[] playerTokens;
+	private static String[] playerNames;
 	private static Engine game;
 	private static int ID = 0;
-	private static final int MAX_SIZE = 100; // temporary holder variable move to
-										// constants
 
-	public static boolean initAPI() {
-		playerTurnObj = new JSONObject[2];
-		playerTurnObj[0] = new JSONObject();
-		playerTurnObj[1] = new JSONObject();
-		
-		playerToken = new String[2];
-		playerToken[0] = "";
-		playerToken[1] = "";
-		
-		playerName = new String[2];
-		playerName[0] = "";
-		playerName[1] = "";
-		
+    public static boolean initAPI() {
+		playerTurnObj = new JSONObject[Constants.PLAYER_COUNT];
+        playerTokens = new String[Constants.PLAYER_COUNT];
+        playerNames = new String[Constants.PLAYER_COUNT];
+
+        for(int i = 0; i < Constants.PLAYER_COUNT; i++) {
+            playerTurnObj[i] = new JSONObject();
+            playerTokens[i] = "";
+            playerNames[i] = "";
+        }
 		game = new Engine();
 		return true;
 	}
 
+    //TODO: Determine better name for method -Eric
 	public static boolean newData(JSONObject obj, String playerToken) {
 		int playerID;
 		String playerName;
-		JSONObject mainShipObj;
+		JSONObject mainShipJSON;
 		ShipData mainShip;
-		JSONArray shiparr;
+		JSONArray shipsJSONArray;
 		ArrayList<ShipData> ships;
 
 		try {
-			if (obj.has("playerName")
-					&& ((playerName = obj.getString("playerName")) != null)) {
-				
-				if (obj.has("mainShip")
-						&& ((mainShipObj = (JSONObject) obj.get("mainShip")) != null)) {
-					
-						mainShipObj.put("type", "M");
-						mainShip = initShip(mainShipObj);
-						
-					if (obj.has("ships")
-							&& ((shiparr = (JSONArray) obj.get("ships")) != null)) {
-						
-						ships = new ArrayList<ShipData>();
-						
-						for(int i = 0; i < 4; i++) {
-							ShipData tempData = initShip(shiparr.getJSONObject(i));
-							if(tempData != null) {
-								ships.add(tempData);
-							}
-						}
-	
-						ships.add(mainShip);
-						playerID = game.playerSet(ships, playerToken);
-						
-						if(playerID == -1) {
-							return false;
-						}
-						
-						API.playerName[playerID] = playerName;
-						API.playerToken[playerID] = playerToken;
-						
-						writePlayer(playerID, "playerToken", playerToken);
-						writePlayer(playerID, "playerName", playerName);
-						writePlayer(playerID, "shipActionResults", new JSONArray());
-						writePlayer(playerID, "hitReport", new JSONArray());
-						writePlayer(playerID, "pingReport", new JSONArray());
-						send(playerID);
-						
-						return true;
-					}
-				}
+            if(obj.has("playerName") && obj.has("mainShip") && obj.has("ships")) {
+                playerName = obj.getString("playerName");
+                mainShipJSON = (JSONObject) obj.get("mainShip");
+                shipsJSONArray = (JSONArray) obj.get("ships");
+            } else {
+                return false;
+            }
+
+			if ( playerName != null && mainShipJSON != null && shipsJSONArray != null) {
+                mainShipJSON.put("type", "M");
+                mainShip = initShip(mainShipJSON);
+
+                ships = new ArrayList<ShipData>();
+
+                //Subtract 1 since main ship initialized earlier.
+                for(int i = 0; i < Constants.MAX_SHIPS-1; i++) {
+                    ShipData tempData = initShip(shipsJSONArray.getJSONObject(i));
+
+                    //TODO: Determine if tempData == null is worth not ignoring like it is now. -Eric
+                    if(tempData != null) {
+                        ships.add(tempData);
+                    }
+                }
+
+                ships.add(mainShip);
+                //TODO: Determine what playerSet does and rename method -Eric
+                playerID = game.playerSet(ships, playerToken);
+
+                if(playerID < 0 || playerID >= Constants.PLAYER_COUNT) {
+                    return false;
+                }
+
+                playerNames[playerID] = playerName;
+                playerTokens[playerID] = playerToken;
+
+                writePlayer(playerID, "playerToken", playerToken);
+                writePlayer(playerID, "playerName", playerName);
+                writePlayer(playerID, "shipActionResults", new JSONArray());
+                writePlayer(playerID, "hitReport", new JSONArray());
+                writePlayer(playerID, "pingReport", new JSONArray());
+                send(playerID);
+
+                return true;
 			}
 			
 		} catch (JSONException e) {
@@ -108,50 +103,58 @@ public class API {
 		}
 
 		return false;
-
 	}
 
 	public static boolean decodeTurn(JSONObject obj) {
 		// sanity check
-		if (playerToken[0].equals("") || playerToken[1].equals("")) {
-			return false;
-		}
-		
+        for (String token : playerTokens) {
+            if (token.equals("")) {
+                return false;
+            }
+        }
+
 		ArrayList<Action> actionList;
-		int currPlayerID;
+		int currPlayerID = -1;
 		int opponentID;
+        String playerToken;
 		try {
-			if (obj.has("playerToken"))  {
-				String playerToken = obj.getString("playerToken");
-				if(playerToken.equals(API.playerToken[0])) {
-					currPlayerID = 0;
-					opponentID = 1;
-				} else  {
-					currPlayerID = 1;
-					opponentID = 0;
-				}
-				
-				if (obj.has("shipActions")) {
-					JSONArray actionListObj = obj.getJSONArray("shipActions");
-					actionList = getActionList(actionListObj);
-					boolean success = game.playerTurn(playerToken, actionList);
-					if(success){
-						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-						API.printTurnToLog(currPlayerID);
-						send(currPlayerID);
-						
-						Timer t = new Timer();
-						ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
-						t.schedule(new ServerTimerTask(), 50);
-					} else{
-						writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-						writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-						send(currPlayerID);
-					}
-					return true;
-				}
-			}
+            if(obj.has("playerToken") && obj.has("shipActions")) {
+                playerToken = obj.getString("playerToken");
+                for(int i = 0; i < Constants.PLAYER_COUNT; i++) {
+                    if(playerToken.equals(playerTokens[i])) {
+                        currPlayerID = i;
+                        break;
+                    }
+                }
+
+                if(currPlayerID == -1){
+                    return false;
+                }
+
+                opponentID = getOpponentID(currPlayerID);
+
+            } else {
+                return false;
+            }
+
+
+            JSONArray actionListObj = obj.getJSONArray("shipActions");
+            actionList = getActionList(actionListObj);
+
+            boolean success = game.playerTurn(playerToken, actionList);
+
+            writePlayer(currPlayerID, "playerToken", playerTokens[currPlayerID]);
+            writePlayer(currPlayerID, "playerName", playerNames[currPlayerID]);
+            send(currPlayerID);
+
+            if(success){
+                printTurnToLog(currPlayerID);
+
+                Timer t = new Timer();
+                ServerTimerTask.PLAYER_TO_NOTIFY = opponentID;
+                t.schedule(new ServerTimerTask(), 50);
+            }
+            return true;
 
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -167,39 +170,29 @@ public class API {
 		String orientation;
 
 		try {
-			if (obj.has("type") 
-					&& !(type = obj.getString("type")).equals("")) {
-				
-				if (obj.has("xCoord") && (xCoord = obj.getInt("xCoord")) > -1
-						&& xCoord < MAX_SIZE) {
-					
-					if (obj.has("yCoord")
-							&& (yCoord = obj.getInt("yCoord")) > -1
-							&& yCoord < MAX_SIZE) {
-						
-						if (obj.has("orientation")
-								&& !(orientation = obj.getString("orientation"))
-										.equals("")) {
-							// Success
-							health = -1;
-							if(type.equals("P")) {
-								health = PilotShip.HEALTH;
-							}
-							else if(type.equals("D")) {
-								health = DestroyerShip.HEALTH;
-							}
-							else if(type.equals("M")) {
-								health = MainShip.HEALTH;
-							}
-							
-							if(health == -1)
-								return null;
-							
-							return new ShipData(health, ID++, type, xCoord,
-									yCoord, orientation);
-						}
-					}
-				}
+            if(obj.has("type") && obj.has("xCoord") && obj.has("yCoord") && obj.has("orientation")) {
+                type = obj.getString("type");
+                xCoord = obj.getInt("xCoord");
+                yCoord = obj.getInt("yCoord");
+                orientation = obj.getString("orientation");
+
+                health = -1;
+                if(type.equals("P")) {
+                    health = PilotShip.HEALTH;
+                } else if(type.equals("D")) {
+                    health = DestroyerShip.HEALTH;
+                } else if(type.equals("M")) {
+                    health = MainShip.HEALTH;
+                }
+            } else {
+                return null;
+            }
+
+			if (!type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE && yCoord > -1
+                    && yCoord < Constants.BOARD_SIZE && !orientation.equals("") && health != -1) {
+
+                // Success
+                return new ShipData(health, ID++, type, xCoord, yCoord, orientation);
 			}
 
 		} catch (JSONException e) {
@@ -216,9 +209,9 @@ public class API {
 	 * @param currPlayerID
 	 */
 	public static void sendTurn(int currPlayerID){
-		writePlayer(currPlayerID, "playerToken", API.playerToken[currPlayerID]);
-		writePlayer(currPlayerID, "playerName", API.playerName[currPlayerID]);
-		API.printTurnToLog(currPlayerID);
+		writePlayer(currPlayerID, "playerToken", playerTokens[currPlayerID]);
+		writePlayer(currPlayerID, "playerName", playerNames[currPlayerID]);
+		printTurnToLog(currPlayerID);
 		send(currPlayerID);
 		
 		int opponentID = 1;
@@ -244,28 +237,25 @@ public class API {
 		String orientation;
 
 		try {
-			if (obj.has("health") && (health = obj.getInt("health")) != 0) {
-				if (obj.has("ID") && (ID = obj.getInt("ID")) != 0) {
-					if (obj.has("type")
-							&& (type = obj.getString("type")).equals("")) {
-						if (obj.has("xCoord")
-								&& (xCoord = obj.getInt("xCoord")) > -1
-								&& xCoord < MAX_SIZE) {
-							if (obj.has("yCoord")
-									&& (yCoord = obj.getInt("yCoord")) > -1
-									&& yCoord < MAX_SIZE) {
-								if (obj.has("orientation")
-										&& !(orientation = obj
-												.getString("orientation"))
-												.equals("")) {
-									// Success
-									return new ShipData(health, ID, type,
-											xCoord, yCoord, orientation);
-								}
-							}
-						}
-					}
-				}
+            if(obj.has("health") && obj.has("ID") && obj.has("type") && obj.has("xCoord")
+                    && obj.has("yCoord") && obj.has("orientation")) {
+
+                health = obj.getInt("health");
+                ID = obj.getInt("ID");
+                type = obj.getString("type");
+                xCoord = obj.getInt("xCoord");
+                yCoord = obj.getInt("yCoord");
+                orientation = obj.getString("orientation");
+            } else {
+                return null;
+            }
+
+            //TODO: Determine why ID must not be 0. -Eric
+			if (health != 0 && ID != 0 && type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
+                    && yCoord  > -1 && yCoord < Constants.BOARD_SIZE && !orientation.equals("")) {
+
+                // Success
+                return new ShipData(health, ID, type, xCoord, yCoord, orientation);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -317,22 +307,14 @@ public class API {
 		int actionExtra;
 
 		try {
-			if (obj.has("actionID")){
+			if (obj.has("actionID") && obj.has("ID") && obj.has("actionX") && obj.has("actionY") && obj.has("actionExtra")){
 				actionID = obj.getString("actionID");
-				if(obj.has("ID")) {
-					shipID = obj.getInt("ID");
-					if(obj.has("actionX")) {
-						actionX = obj.getInt("actionX");	
-						if(obj.has("actionY")) {
-							actionY = obj.getInt("actionY");
-							if(obj.has("actionExtra")) {
-								actionExtra = obj.getInt("actionExtra");
-								return new Action(shipID, actionID, actionX, actionY, actionExtra);
-							}
-						}
-					}
-				}
-			}
+                shipID = obj.getInt("ID");
+                actionX = obj.getInt("actionX");
+                actionY = obj.getInt("actionY");
+                actionExtra = obj.getInt("actionExtra");
+                return new Action(shipID, actionID, actionX, actionY, actionExtra);
+            }
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -370,7 +352,7 @@ public class API {
 	 *            - enum that tells us to write to player1, player2 or both
 	 * @param ships
 	 *            - array list of current player ships/status
-	 * @return - true if sucessful write
+	 * @return - true if successful write
 	 */
 	public static boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
 		JSONArray shipsJson = new JSONArray();
@@ -410,7 +392,7 @@ public class API {
 	
 	public static boolean writePlayerError(int status, String message) {
 		try {
-			API.playerTurnObj[status].append("error", message);
+			playerTurnObj[status].append("error", message);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return false;
@@ -420,15 +402,15 @@ public class API {
 	
 	public static boolean writePlayerResponseCode(int status) {
 		try {
-			if(API.playerTurnObj[status].has("error")) {
-				int length = API.playerTurnObj[status].getJSONArray("error").length();
+			if(playerTurnObj[status].has("error")) {
+				int length = playerTurnObj[status].getJSONArray("error").length();
 				if(length > 0) {
 					return writePlayer(status, "responseCode", 400);
 				}
 				return writePlayer(status, "responseCode", 200);
 			}
 			else {
-				API.playerTurnObj[status].put("error", new JSONArray());
+				playerTurnObj[status].put("error", new JSONArray());
 				return writePlayer(status, "responseCode", 200);
 			}
 		} catch (JSONException e) {
@@ -446,7 +428,7 @@ public class API {
 	 *            - enum that tells us to write to player1, player2 or both
 	 * @param hits
 	 *            - array list of current player hit reports
-	 * @return - true if sucessful write
+	 * @return - true if successful write
 	 */
 	public static boolean writePlayerHits(int status, ArrayList<HitReport> hits) {
 		JSONArray hitsJson = new JSONArray();
@@ -590,15 +572,15 @@ public class API {
 	public static void notifyTurn(int status) {
 		writePlayer(status, "error", new JSONArray());
 		writePlayer(status, "responseCode", 100);
-		writePlayer(status, "playerName", API.playerName[status]);
-		writePlayer(status, "playerToken", API.playerToken[status]);
+		writePlayer(status, "playerName", playerNames[status]);
+		writePlayer(status, "playerToken", playerTokens[status]);
 		writePlayer(status, "shipActionResults", new JSONArray());
 		writePlayer(status, "hitReport", new JSONArray());
 		
-		if(!API.playerTurnObj[status].has("ships")) {
+		if(!playerTurnObj[status].has("ships")) {
 			writePlayer(status, "ships", new JSONArray());
 		}
-		if(!API.playerTurnObj[status].has("pingReport")) {
+		if(!playerTurnObj[status].has("pingReport")) {
 			writePlayer(status, "pingReport", new JSONArray());
 		}
 		send(status);
@@ -615,7 +597,7 @@ public class API {
 	 *            - object that we're writing
 	 */
 	private static boolean writePlayer(int status, String string, Object obj) {
-		
+        //TODO: Generalize to remove code duplication
 		try {
 			switch (status) {
 			case 0: // append to player 1
@@ -641,65 +623,58 @@ public class API {
 	/**
 	 * @param status
 	 *            - enum that tells us to write to player1, player2 or both
-	 * @param resources
-	 *            - given Player's remaining resources
 	 * @return - true if successful send
 	 */
 	
 	public static boolean send(int status) {
-		
+		//TODO: Generalize to remove code duplication
 		switch (status) {
-		// send to player 1
-		case 0: 
-			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
-			playerTurnObj[status] = new JSONObject();
-			break;
-			
-		// send to player 2	
-		case 1: 
-			Server.sendPlayer(playerTurnObj[status], playerToken[status]);
-			playerTurnObj[status] = new JSONObject();
-			break;
-			
-		// append to both
-		case 2: 
-			Server.sendPlayer(playerTurnObj[0], playerToken[0]);
-			playerTurnObj[0] = new JSONObject();
-			Server.sendPlayer(playerTurnObj[1], playerToken[1]);
-			playerTurnObj[1] = new JSONObject();
-			break;
-			
-		default:
-			return false;
-			
+            // send to player 1
+            case 0:
+                Server.sendPlayer(playerTurnObj[status], playerTokens[status]);
+                playerTurnObj[status] = new JSONObject();
+                break;
+
+            // send to player 2
+            case 1:
+                Server.sendPlayer(playerTurnObj[status], playerTokens[status]);
+                playerTurnObj[status] = new JSONObject();
+                break;
+
+            // append to both
+            case 2:
+                Server.sendPlayer(playerTurnObj[0], playerTokens[0]);
+                playerTurnObj[0] = new JSONObject();
+                Server.sendPlayer(playerTurnObj[1], playerTokens[1]);
+                playerTurnObj[1] = new JSONObject();
+                break;
+
+            default:
+                return false;
 		}
 		
 		return true;
 	}
 
-	public static boolean hasWon(int PlayerID) {
-		if (PlayerID == 0) {
+	public static boolean hasWon(int playerID) {
+        int opponentID = getOpponentID(playerID);
 
-			writePlayer(0, "responseCode", 9001);
-			writePlayer(1, "responseCode", -1);
-			send(0);
-			send(1);
-			
-			Server.winCondition(0);
-			return true;
-		} else if (PlayerID == 1) {
-			writePlayer(1, "responseCode", 9001);
-            writePlayer(0, "responseCode", -1);
-        	send(0);
-			send(1);
-            Server.winCondition(1);
-			return true;
-		}
-		throw new RuntimeException("There is no winner ????");
+        writePlayer(playerID, "responseCode", 9001);
+        writePlayer(opponentID, "responseCode", -1);
+        send(playerID);
+        send(opponentID);
+
+        Server.winCondition(playerID);
+        return true;
 	}
 
 	public static void printTurnToLog(int playerID) {
 		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
 	}
+
+    private static int getOpponentID(int playerID) {
+        //Note: If we ever want to truly generalize the number of players, then dead players should not be opponents.
+        return (playerID + 1) % Constants.PLAYER_COUNT;
+    }
 
 }

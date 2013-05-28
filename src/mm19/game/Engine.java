@@ -13,7 +13,7 @@ import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
 import mm19.server.API;
-import mm19.server.ServerTimerTask;
+import mm19.server.ShipActionResult;
 import mm19.server.ShipData;
 
 
@@ -23,37 +23,36 @@ import mm19.server.ShipData;
  * This will put all the pieces of the game together, and actually make things run.
  */
 public class Engine{
+    public static final String SHOOT = "F";
+    public static final String BURST_SHOT = "BS";
+    public static final String SONAR = "S";
+    public static final String MOVE_HORIZONTAL = "MH";
+    public static final String MOVE_VERTICAL = "MV";
+
+    public static final String DESTROYER_SHIP = "D";
+    public static final String MAIN_SHIP = "M";
+    public static final String PILOT_SHIP = "P";
+
+    public static final int TURN_LIMIT = 10000;
+    public static final int TIME_LIMIT = 10;
+
 	private Player[] players;
 	private String[] playerTokens;
 	private int turn = 0;
 	private Timer time;
-	public static final String SHOOT = "F";
-	public static final String BURST_SHOT = "BS";
-	public static final String SONAR = "S";
-	public static final String MOVE_Horizontal = "MH";
-	public static final String MOVE_Vertical = "MV";
-	
-	public static final int MAXSHIPS =5;
-	public static final int DEFAULT_RESOURCES=100;
-	
-	public static final String DESTROYER = "D";
-	public static final String MAINSHIP = "M";
-	public static final String PILOT = "P";
-	
-	public static final int TURNLIMIT = 10000;
-	public static final int TIMELIMIT = 10;
+
 	
 	/**
 	 * the constructor is called by the API to start the game.
 	 */
     public Engine(){
-    	players = new Player[2];
-    	players[0] = null;
-    	players[1] = null;
+    	players = new Player[Constants.PLAYER_COUNT];
+        playerTokens = new String[Constants.PLAYER_COUNT];
+        for (int i = 0; i < Constants.PLAYER_COUNT; i++) {
+            players[i] = null;
+            playerTokens[i] = "";
+        }
 
-    	playerTokens = new String[2];
-    	playerTokens[0] = "";
-    	playerTokens[1] = "";
     	turn = 0;
     }
 
@@ -88,14 +87,14 @@ public class Engine{
 		Position tempPos;
 		String tempType;
 		
-		for(int i = 0; i < Math.min(shipDatas.size(), MAXSHIPS); i++){
+		for(int i = 0; i < Math.min(shipDatas.size(), Constants.MAX_SHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
-			if(tempType.equals(DESTROYER)){
+			if(tempType.equals(DESTROYER_SHIP)){
 				tempShip = new DestroyerShip();
-			}else if(tempType.equals(MAINSHIP)){
+			}else if(tempType.equals(MAIN_SHIP)){
 				tempShip = new MainShip();
-			}else if(tempType.equals(PILOT)){
+			}else if(tempType.equals(PILOT_SHIP)){
 				tempShip = new PilotShip();
 			}
 			if(tempShip != null){
@@ -120,7 +119,7 @@ public class Engine{
 			return -1;
 		}
 		
-		Player player=new Player(DEFAULT_RESOURCES);
+		Player player=new Player(Constants.STARTING_RESOURCES);
 		
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
 		
@@ -149,7 +148,7 @@ public class Engine{
 		turn++;
 		if(turn > 1){
 			time = new Timer();
-			time.schedule(new Timeout(this), TIMELIMIT*1000);
+			time.schedule(new Timeout(this), TIME_LIMIT *1000);
 		}
 		return player.getPlayerID();
 	}
@@ -230,14 +229,14 @@ public class Engine{
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, a, results);
                 }
-			} else if (a.actionID.equals(MOVE_Horizontal)) {
+			} else if (a.actionID.equals(MOVE_HORIZONTAL)) {
 				try{
 					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
 					results.add(new ShipActionResult(a.shipID, "S"));
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, a, results);
                 }
-			} else if (a.actionID.equals(MOVE_Vertical)) {
+			} else if (a.actionID.equals(MOVE_VERTICAL)) {
 				try{
 					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
 					results.add(new ShipActionResult(a.shipID, "S"));
@@ -285,7 +284,7 @@ public class Engine{
 			//Player 1 wins
 			System.out.println("P1 wins!");
 			API.hasWon(players[1].getPlayerID());
-		} else if(turn > TURNLIMIT){
+		} else if(turn > TURN_LIMIT){
 			//Tie game, break the tie
 			System.out.println("Tie!");
 			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
@@ -313,11 +312,11 @@ public class Engine{
 			for(Ship ship : ships){
 				tempType = null;
 				if(ship instanceof DestroyerShip){
-					tempType = DESTROYER;
+					tempType = DESTROYER_SHIP;
 				}else if(ship instanceof MainShip){
-					tempType = MAINSHIP;
+					tempType = MAIN_SHIP;
 				}else if(ship instanceof PilotShip){
-					tempType = PILOT;
+					tempType = PILOT_SHIP;
 				}
 				String tempOrient = "";
 				if(tempType != null){
@@ -353,7 +352,7 @@ public class Engine{
 			
 			//Start the timer for the next turn
 			time = new Timer();
-			time.schedule(new Timeout(this), TIMELIMIT*1000);
+			time.schedule(new Timeout(this), TIME_LIMIT *1000);
 		}
 	}
 	
@@ -371,11 +370,11 @@ public class Engine{
 			tempType = null;
 			
 			if(tempShip instanceof DestroyerShip){
-				tempType = DESTROYER;
+				tempType = DESTROYER_SHIP;
 			}else if(tempShip instanceof MainShip){
-				tempType = MAINSHIP;
+				tempType = MAIN_SHIP;
 			}else if(tempShip instanceof PilotShip){
-				tempType = PILOT;
+				tempType = PILOT_SHIP;
 			}
 			
 			String temporient = "";
