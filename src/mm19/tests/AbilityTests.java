@@ -72,18 +72,18 @@ public class AbilityTests {
         Player attacker = initializePlayer();
         Player defender = initializePlayer();
 
-        assertEquals(defender, Ability.tieBreaker(attacker, defender));
-        assertEquals(attacker, Ability.tieBreaker(defender, attacker));
+        assertEquals(defender, Ability.breakTie(attacker, defender));
+        assertEquals(attacker, Ability.breakTie(defender, attacker));
 
         defender.takeResources(1);
-        assertEquals(attacker, Ability.tieBreaker(attacker, defender));
-        assertEquals(attacker, Ability.tieBreaker(defender, attacker));
+        assertEquals(attacker, Ability.breakTie(attacker, defender));
+        assertEquals(attacker, Ability.breakTie(defender, attacker));
 
         Board attackerBoard = attacker.getBoard();
         ArrayList<Ship> attackerShips = attackerBoard.getShips();
         attackerShips.get(0).applyDamage(1);
-        assertEquals(defender, Ability.tieBreaker(attacker, defender));
-        assertEquals(defender, Ability.tieBreaker(defender, attacker));
+        assertEquals(defender, Ability.breakTie(attacker, defender));
+        assertEquals(defender, Ability.breakTie(defender, attacker));
     }
 
     @Test

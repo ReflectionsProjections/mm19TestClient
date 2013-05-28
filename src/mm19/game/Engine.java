@@ -23,6 +23,8 @@ import mm19.server.ShipData;
  * This will put all the pieces of the game together, and actually make things run.
  */
 public class Engine{
+
+    //TODO Create an enum of these ids in appropriate classes
     public static final String SHOOT = "F";
     public static final String BURST_SHOT = "BS";
     public static final String SONAR = "S";
@@ -54,6 +56,11 @@ public class Engine{
         }
 
     	turn = 0;
+    }
+
+    public static int getOpponentID(int playerID) {
+        //Note: If we ever want to truly generalize the number of players, then dead players should not be opponents.
+        return (playerID + 1) % Constants.PLAYER_COUNT;
     }
 
     /**
@@ -170,82 +177,78 @@ public class Engine{
 		} else {
 			playerID = 1;
 		}
-		if(playerID != turn %2 ){
+		if(playerID != turn % 2 ){
 			API.writePlayerError(playerID, "It is not your turn!");
 			API.writePlayerResponseCode(playerID);
 			return false;
 		}
-		Player p = null;
-		Player otherP = null;
+		Player player = null;
+		Player otherPlayer = null;
 		if(players[0].getPlayerID() == playerID){
-			p = players[0];
-			otherP = players[1];
+			player = players[0];
+			otherPlayer = players[1];
 		}
 		else if(players[1].getPlayerID() == playerID){
-			p = players[1];
-			otherP = players[0];
+			player = players[1];
+			otherPlayer = players[0];
 		}
-//		if(p==null){
-//			//just got an invalid player ID
-//			return;
-//		}
 		
-		Ability.gatherResources(p);
+		Ability.gatherResources(player);
 		
-		ArrayList<ShipActionResult> results = new ArrayList<ShipActionResult>();
+		ArrayList<ShipActionResult> turnResults = new ArrayList<ShipActionResult>();
 		ArrayList<HitReport> hits = new ArrayList<HitReport>();
 		ArrayList<HitReport> opponentHits= new ArrayList<HitReport>();
 		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
 		
-		for(Action a: actions){
-			if(a.actionID.equals(SHOOT)) {
+		for(Action action: actions){
+			if(action.actionID.equals(SHOOT)) {
 				try{
-					HitReport hitResponse = Ability.shoot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					results.add(new ShipActionResult(a.shipID, "S"));
+					HitReport hitResponse = Ability.shoot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+					turnResults.add(new ShipActionResult(action.shipID, "S"));
 					hits.add(hitResponse);
 					opponentHits.add(hitResponse);
 				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, a, results);
+                    handleEngineException(ee, playerID, action, turnResults);
 				}
-			} else if (a.actionID.equals(BURST_SHOT)) { 
+			} else if (action.actionID.equals(BURST_SHOT)) {
 				try{
 					ArrayList<HitReport> burstResponse = 
-			        Ability.burstShot(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					results.add(new ShipActionResult(a.shipID, "S"));
-					for(HitReport h : burstResponse){
-						if(h.shotSuccessful){
-							opponentHits.add(h);
+			        Ability.burstShot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+					turnResults.add(new ShipActionResult(action.shipID, "S"));
+					for(HitReport hitReport : burstResponse){
+						if(hitReport.shotSuccessful){
+							opponentHits.add(hitReport);
 						}
 					}
-					//hits.addAll(burstResponse);
 				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, a, results);
+                    handleEngineException(ee, playerID, action, turnResults);
                 }
-			} else if (a.actionID.equals(SONAR)) {
+			} else if (action.actionID.equals(SONAR)) {
 				try{
-					ArrayList<SonarReport> sonarResponse = Ability.sonar(p, otherP, a.shipID, a.actionXVar, a.actionYVar);
-					results.add(new ShipActionResult(a.shipID, "S"));
+					ArrayList<SonarReport> sonarResponse = Ability.sonar(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+					turnResults.add(new ShipActionResult(action.shipID, "S"));
 					pings.addAll(sonarResponse);
 				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, a, results);
+                    handleEngineException(ee, playerID, action, turnResults);
                 }
-			} else if (a.actionID.equals(MOVE_HORIZONTAL)) {
-				try{
-					boolean moveResponse = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.HORIZONTAL));
-					results.add(new ShipActionResult(a.shipID, "S"));
-				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, a, results);
+			} else if (action.actionID.equals(MOVE_HORIZONTAL) || action.actionID.equals(MOVE_VERTICAL)) {
+                Position.Orientation orientation;
+                if(action.actionID.equals(MOVE_HORIZONTAL)) {
+                    orientation = Position.Orientation.HORIZONTAL;
+                } else {
+                    orientation = Position.Orientation.VERTICAL;
                 }
-			} else if (a.actionID.equals(MOVE_VERTICAL)) {
+
 				try{
-					boolean moveResponse2 = Ability.move(p, a.shipID, new Position(a.actionXVar, a.actionYVar, Position.Orientation.VERTICAL));
-					results.add(new ShipActionResult(a.shipID, "S"));
+                    //TODO: Ask why move success (moveResponse) is not relayed to player.
+					boolean moveResponse = Ability.move(player, action.shipID, new Position(action.actionXVar, action.actionYVar, orientation));
+					turnResults.add(new ShipActionResult(action.shipID, "S"));
 				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, a, results);
+                    handleEngineException(ee, playerID, action, turnResults);
                 }
 			}
 		}
-		endofTurn(p, results, hits, opponentHits, pings);
+		endofTurn(player, turnResults, hits, opponentHits, pings);
 		return true;
 	}
 	
@@ -255,6 +258,7 @@ public class Engine{
 	 */
 	public void timeout(){
 		System.out.println("timeout!");
+        //TODO: Get rid of magic numbers.
 		int currPlayerID = turn%2;
 		int opponentID = (turn+1)%2;
 		Player p = players[turn % 2];
@@ -271,11 +275,10 @@ public class Engine{
 	 * @param hits
 	 * @param sonar
 	 */
-	public void endofTurn(Player p, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
+	public void endofTurn(Player player, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
+        //TODO: generalize...
 		if(!players[0].isAlive() && !players[1].isAlive()){
-			//Tie game (Is this even possible?)
-
-			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
+			API.hasWon(Ability.breakTie(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
 			System.out.println("P2 wins!");
@@ -287,13 +290,13 @@ public class Engine{
 		} else if(turn > TURN_LIMIT){
 			//Tie game, break the tie
 			System.out.println("Tie!");
-			API.hasWon(Ability.tieBreaker(players[0], players[1]).getPlayerID());
+			API.hasWon(Ability.breakTie(players[0], players[1]).getPlayerID());
 			
 		} else{
 			//Send data to both players
 			int currPlayerID, opponentID;
 			Player opponent;
-			if(players[0].getPlayerID() == p.getPlayerID()){
+			if(players[0].getPlayerID() == player.getPlayerID()){
 				currPlayerID = 0;
 				opponentID = 1;
 				opponent = players[1];
@@ -326,6 +329,8 @@ public class Engine{
 						tempOrient = "V";
 					}
 					tempPos = opponent.getBoard().getShipPosition(ship.getID());
+
+                    //TODO: Where does data get used??
 					data.add(new ShipData(ship.getHealth(), ship.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 				}
 			}
@@ -357,7 +362,7 @@ public class Engine{
 	}
 	
 	private ArrayList<ShipData> getShipData(Player p) {
-		
+		//TODO Use a better name than 'p'
 		ArrayList<ShipData> data = new ArrayList<ShipData>();
 		ArrayList<Ship> ships = p.getBoard().getShips();
 		Ship tempShip;
@@ -368,7 +373,8 @@ public class Engine{
 			
 			tempShip = ships.get(i);
 			tempType = null;
-			
+
+            //TODO: Add an abstract method to ship class that returns a type abbreviation.
 			if(tempShip instanceof DestroyerShip){
 				tempType = DESTROYER_SHIP;
 			}else if(tempShip instanceof MainShip){
@@ -394,6 +400,7 @@ public class Engine{
 		return data;
 	}
 
+    //TODO If we aren't going to use these were should remove them
 	public int getP1ID() {
 		if(players[0] != null) return players[0].getPlayerID();
 		return -1;

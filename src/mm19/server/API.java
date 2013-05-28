@@ -131,7 +131,7 @@ public class API {
                     return false;
                 }
 
-                opponentID = getOpponentID(currPlayerID);
+                opponentID = Engine.getOpponentID(currPlayerID);
 
             } else {
                 return false;
@@ -657,7 +657,7 @@ public class API {
 	}
 
 	public static boolean hasWon(int playerID) {
-        int opponentID = getOpponentID(playerID);
+        int opponentID = Engine.getOpponentID(playerID);
 
         writePlayer(playerID, "responseCode", 9001);
         writePlayer(opponentID, "responseCode", -1);
@@ -671,10 +671,4 @@ public class API {
 	public static void printTurnToLog(int playerID) {
 		Server.printToVisualizerLog(playerTurnObj[playerID].toString());
 	}
-
-    private static int getOpponentID(int playerID) {
-        //Note: If we ever want to truly generalize the number of players, then dead players should not be opponents.
-        return (playerID + 1) % Constants.PLAYER_COUNT;
-    }
-
 }

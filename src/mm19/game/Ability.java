@@ -59,7 +59,7 @@ public class Ability {
      * @param p2 The second player that tied
      * @return returns the player that has been chosen as victor
      */
-    public static Player tieBreaker(Player p1, Player p2){
+    public static Player breakTie(Player p1, Player p2){
     	int p1Health = 0;
     	int p2Health = 0;
     	Board board = p1.getBoard();
