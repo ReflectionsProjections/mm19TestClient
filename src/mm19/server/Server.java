@@ -63,13 +63,13 @@ public class Server {
 
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+        //TODO I think something should happen with 'success' before it is writen again... -Eric
 		success = API.initAPI();
 		
 		visualizerLog = new GameLogger(Server.visualizerLogURL);
 
 		if (!success) {
-			serverLog.log(Level.SEVERE,
-					"Fatal error: unable to start server. Bailing out.");
+			serverLog.log(Level.SEVERE, "Fatal error: unable to start server. Bailing out.");
 			System.exit(1);
 		}
 
@@ -87,13 +87,13 @@ public class Server {
 		clientSockets = new Socket[Constants.PLAYER_COUNT];
 
 		playerToken = new String[Constants.PLAYER_COUNT];
-		for(String token : playerToken) {
-			token = "";
+		for(int i = 0; i < playerToken.length; i++) {
+			playerToken[i] = "";
 		}
 		
 		connected = new boolean[Constants.PLAYER_COUNT];
-		for(boolean c : connected) {
-			c = false;
+		for(int i = 0; i < connected.length; i++) {
+			connected[i] = false;
 		}
 
 		bte = new BasicTextEncryptor();
@@ -134,17 +134,14 @@ public class Server {
 				// players are already connected
 				currPlayerID = getValidPlayerID();
 				if (currPlayerID == -1) {
-					serverLog.log(Level.WARNING,
-							"The server needs to be restarted");
+					serverLog.log(Level.WARNING, "The server needs to be restarted");
 					continue;
 				}
 
 				serverLog.log(Level.INFO, "Connection received.");
-				serverLog.log(Level.INFO,
-						"Waiting on player for new player data.");
+				serverLog.log(Level.INFO, "Waiting on player for new player data.");
 
-				in = new BufferedReader(new InputStreamReader(
-						clientSocket.getInputStream()));
+				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				out = new PrintWriter(clientSocket.getOutputStream(), true);
 
 				// Blocks until it gets a response from the client, hopefully a
@@ -315,7 +312,6 @@ public class Server {
 			out = new PrintWriter(clientSockets[playerID].getOutputStream(),
 					true);
 			out.println(player1);
-			//System.out.println(player1);
 			out.flush();
 
 		} catch (IOException e) {
