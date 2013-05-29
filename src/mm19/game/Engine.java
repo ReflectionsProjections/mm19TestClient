@@ -25,15 +25,9 @@ import mm19.server.ShipData;
 public class Engine{
 
     //TODO Create an enum of these ids in appropriate classes
-    public static final String SHOOT = "F";
-    public static final String BURST_SHOT = "BS";
-    public static final String SONAR = "S";
-    public static final String MOVE_HORIZONTAL = "MH";
-    public static final String MOVE_VERTICAL = "MV";
-
-    public static final String DESTROYER_SHIP = "D";
-    public static final String MAIN_SHIP = "M";
-    public static final String PILOT_SHIP = "P";
+    public static final String SUCCESS_IDENTIFIER = "S";
+    public static final String INPUT_EXCEPTION_IDENTIFIER = "I";
+    public static final String RESOURCE_EXCEPTION_IDENTIFIER = "R";
 
     public static final int TURN_LIMIT = 10000;
     public static final int TIME_LIMIT = 10;
@@ -72,12 +66,11 @@ public class Engine{
      */
     private void handleEngineException(EngineException ee, int playerID, Action action, ArrayList<ShipActionResult> turnResults) {
         if(ee instanceof InputException) {
-            turnResults.add(new ShipActionResult(action.shipID, "I"));
-            API.writePlayerError(playerID, ee.getMessage());
+            turnResults.add(new ShipActionResult(action.shipID, INPUT_EXCEPTION_IDENTIFIER));
         } else if (ee instanceof ResourceException) {
-            turnResults.add(new ShipActionResult(action.shipID, "R"));
-            API.writePlayerError(playerID, ee.getMessage());
+            turnResults.add(new ShipActionResult(action.shipID, RESOURCE_EXCEPTION_IDENTIFIER));
         }
+        API.writePlayerError(playerID, ee.getMessage());
     }
 	
     /**
@@ -97,11 +90,11 @@ public class Engine{
 		for(int i = 0; i < Math.min(shipDatas.size(), Constants.MAX_SHIPS); i++){
 			tempType = shipDatas.get(i).type;
 			tempShip = null;
-			if(tempType.equals(DESTROYER_SHIP)){
+			if(tempType.equals(DestroyerShip.IDENTIFIER)){
 				tempShip = new DestroyerShip();
-			}else if(tempType.equals(MAIN_SHIP)){
+			}else if(tempType.equals(MainShip.IDENTIFIER)){
 				tempShip = new MainShip();
-			}else if(tempType.equals(PILOT_SHIP)){
+			}else if(tempType.equals(PilotShip.IDENTIFIER)){
 				tempShip = new PilotShip();
 			}
 			if(tempShip != null){
@@ -171,6 +164,7 @@ public class Engine{
 		time.purge();
 		
 		//Check for valid playerID
+        //TODO Generalize player
 		int playerID;
 		if(playerTokens[0].equals(playerToken)) {
 			playerID = 0;
@@ -201,20 +195,20 @@ public class Engine{
 		ArrayList<SonarReport> pings = new ArrayList<SonarReport>();
 		
 		for(Action action: actions){
-			if(action.actionID.equals(SHOOT)) {
+			if(action.actionID == Action.Type.SHOOT) {
 				try{
 					HitReport hitResponse = Ability.shoot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
-					turnResults.add(new ShipActionResult(action.shipID, "S"));
+					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					hits.add(hitResponse);
 					opponentHits.add(hitResponse);
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, action, turnResults);
 				}
-			} else if (action.actionID.equals(BURST_SHOT)) {
+			} else if (action.actionID == Action.Type.BURST_SHOT) {
 				try{
 					ArrayList<HitReport> burstResponse = 
 			        Ability.burstShot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
-					turnResults.add(new ShipActionResult(action.shipID, "S"));
+					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					for(HitReport hitReport : burstResponse){
 						if(hitReport.shotSuccessful){
 							opponentHits.add(hitReport);
@@ -223,17 +217,17 @@ public class Engine{
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, action, turnResults);
                 }
-			} else if (action.actionID.equals(SONAR)) {
+			} else if (action.actionID == Action.Type.SONAR) {
 				try{
 					ArrayList<SonarReport> sonarResponse = Ability.sonar(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
-					turnResults.add(new ShipActionResult(action.shipID, "S"));
+					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					pings.addAll(sonarResponse);
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, action, turnResults);
                 }
-			} else if (action.actionID.equals(MOVE_HORIZONTAL) || action.actionID.equals(MOVE_VERTICAL)) {
+			} else if (action.actionID == Action.Type.MOVE_HORIZONTAL || action.actionID == Action.Type.MOVE_VERTICAL) {
                 Position.Orientation orientation;
-                if(action.actionID.equals(MOVE_HORIZONTAL)) {
+                if(action.actionID == Action.Type.MOVE_HORIZONTAL) {
                     orientation = Position.Orientation.HORIZONTAL;
                 } else {
                     orientation = Position.Orientation.VERTICAL;
@@ -242,7 +236,7 @@ public class Engine{
 				try{
                     //TODO: Ask why move success (moveResponse) is not relayed to player.
 					boolean moveResponse = Ability.move(player, action.shipID, new Position(action.actionXVar, action.actionYVar, orientation));
-					turnResults.add(new ShipActionResult(action.shipID, "S"));
+					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 				} catch(EngineException ee){
                     handleEngineException(ee, playerID, action, turnResults);
                 }
@@ -255,13 +249,17 @@ public class Engine{
 	/**
 	 * This function is called when the player fails to send their turn in a reasonable amount of time.
 	 * It calls endOfTurn as if a turn was taken, but without doing anything else
+     * Note: If endOfTurn is called in time, the timer that triggers this function is canceled and reset.
 	 */
 	public void timeout(){
 		System.out.println("timeout!");
 		int currPlayerID = turn % Constants.PLAYER_COUNT;
 		int opponentID = getOpponentID(currPlayerID);
 		Player player = players[currPlayerID];
-		endOfTurn(player, new ArrayList<ShipActionResult>(), new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
+
+        //TODO Create local variables and pass them into endOfTurn
+		endOfTurn(player, new ArrayList<ShipActionResult>(),
+                new ArrayList<HitReport>(), new ArrayList<HitReport>(), new ArrayList<SonarReport>());
 		
 		API.sendTurn(currPlayerID);
 	}
@@ -312,21 +310,10 @@ public class Engine{
             String tempType;
             ArrayList<Ship> ships = opponent.getBoard().getShips();
 			for(Ship ship : ships){
-				tempType = null;
-				if(ship instanceof DestroyerShip){
-					tempType = DESTROYER_SHIP;
-				}else if(ship instanceof MainShip){
-					tempType = MAIN_SHIP;
-				}else if(ship instanceof PilotShip){
-					tempType = PILOT_SHIP;
-				}
-				String tempOrient = "";
+				tempType = ship.getIdentifier();
+
 				if(tempType != null){
-					if(opponent.getBoard().getShipPosition(ship.getID()).orientation == Position.Orientation.HORIZONTAL){
-						tempOrient = "H";
-					}else{
-						tempOrient = "V";
-					}
+                    Position.Orientation tempOrient = opponent.getBoard().getShipPosition(ship.getID()).orientation;
 					tempPos = opponent.getBoard().getShipPosition(ship.getID());
 
                     //TODO: Where does data get used??
@@ -371,28 +358,14 @@ public class Engine{
 		for(int i = 0; i < ships.size(); i++){
 			
 			tempShip = ships.get(i);
-			tempType = null;
+			tempType = tempShip.getIdentifier();
 
-            //TODO: Add an abstract method to ship class that returns a type abbreviation.
-			if(tempShip instanceof DestroyerShip){
-				tempType = DESTROYER_SHIP;
-			}else if(tempShip instanceof MainShip){
-				tempType = MAIN_SHIP;
-			}else if(tempShip instanceof PilotShip){
-				tempType = PILOT_SHIP;
-			}
-			
-			String temporient = "";
+
 			
 			if(tempType != null){
-				
-				if(p.getBoard().getShipPosition(tempShip.getID()).orientation == Position.Orientation.HORIZONTAL){
-					temporient = "H";
-				} else{
-					temporient = "V";
-				}
+                Position.Orientation tempOrient = p.getBoard().getShipPosition(tempShip.getID()).orientation;
 				tempPos=p.getBoard().getShipPosition(tempShip.getID());
-				data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, temporient));
+				data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 			}
 		}
 		

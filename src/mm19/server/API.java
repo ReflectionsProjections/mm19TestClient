@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 
 import mm19.game.*;
+import mm19.game.board.Position;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
@@ -76,7 +77,7 @@ public class API {
             }
 
 			if ( playerName != null && mainShipJSON != null && shipsJSONArray != null) {
-                mainShipJSON.put("type", "M");
+                mainShipJSON.put("type", MainShip.IDENTIFIER);
                 mainShip = initShip(mainShipJSON);
 
                 ships = new ArrayList<ShipData>();
@@ -195,22 +196,22 @@ public class API {
 		String type;
 		int xCoord;
 		int yCoord;
-		String orientation;
+		String orientationIdentifier;
 
 		try {
             if(obj.has("type") && obj.has("xCoord") && obj.has("yCoord") && obj.has("orientation")) {
                 type = obj.getString("type");
                 xCoord = obj.getInt("xCoord");
                 yCoord = obj.getInt("yCoord");
-                orientation = obj.getString("orientation");
+                orientationIdentifier = obj.getString("orientation");
 
                 health = -1;
                 //TODO Try to find a better way to handle this
-                if(type.equals("P")) {
+                if(type.equals(PilotShip.IDENTIFIER)) {
                     health = PilotShip.HEALTH;
-                } else if(type.equals("D")) {
+                } else if(type.equals(DestroyerShip.IDENTIFIER)) {
                     health = DestroyerShip.HEALTH;
-                } else if(type.equals("M")) {
+                } else if(type.equals(MainShip.IDENTIFIER)) {
                     health = MainShip.HEALTH;
                 }
             } else {
@@ -218,8 +219,8 @@ public class API {
             }
 
 			if (!type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE && yCoord > -1
-                    && yCoord < Constants.BOARD_SIZE && !orientation.equals("") && health != -1) {
-
+                    && yCoord < Constants.BOARD_SIZE && !orientationIdentifier.equals("") && health != -1) {
+                Position.Orientation orientation = Position.getOrientationByIdentifier(orientationIdentifier);
                 return new ShipData(health, ID++, type, xCoord, yCoord, orientation);
 			}
 
@@ -262,7 +263,7 @@ public class API {
 		String type;
 		int xCoord;
 		int yCoord;
-		String orientation;
+		String orientationIdentifier;
 
 		try {
             if(obj.has("health") && obj.has("ID") && obj.has("type") && obj.has("xCoord")
@@ -273,15 +274,16 @@ public class API {
                 type = obj.getString("type");
                 xCoord = obj.getInt("xCoord");
                 yCoord = obj.getInt("yCoord");
-                orientation = obj.getString("orientation");
+                orientationIdentifier = obj.getString("orientation");
             } else {
                 return null;
             }
 
             //TODO: Determine why ID must not be 0.  0 seems like a reasonable value. -Eric
 			if (health != 0 && ID != 0 && type.equals("") && xCoord > -1 && xCoord < Constants.BOARD_SIZE
-                    && yCoord  > -1 && yCoord < Constants.BOARD_SIZE && !orientation.equals("")) {
+                    && yCoord  > -1 && yCoord < Constants.BOARD_SIZE && !orientationIdentifier.equals("")) {
 
+                Position.Orientation orientation = Position.getOrientationByIdentifier(orientationIdentifier);
                 return new ShipData(health, ID, type, xCoord, yCoord, orientation);
 			}
 		} catch (JSONException e) {
@@ -344,7 +346,12 @@ public class API {
                 actionX = obj.getInt("actionX");
                 actionY = obj.getInt("actionY");
                 actionExtra = obj.getInt("actionExtra");
-                return new Action(shipID, actionID, actionX, actionY, actionExtra);
+
+                Action.Type actionType = Action.getActionTypeByIdentifier(actionID);
+
+
+
+                return new Action(shipID, actionType, actionX, actionY, actionExtra);
             }
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -446,24 +453,23 @@ public class API {
     /**
      * TODO Description goes here
      *
-     * @param status TODO: This file needs more javadoc
+     * @param playerID TODO: This file needs more javadoc
      * @return TODO: This file needs more javadoc
      */
-	public static boolean writePlayerResponseCode(int status) {
+	public static boolean writePlayerResponseCode(int playerID) {
 		try {
 
             //TODO Rearrange code so there is only a since writePlayer call.
             //TODO Store result of writePlayer in well named boolean variable and return that
-			if(playerTurnObj[status].has("error")) {
-				int length = playerTurnObj[status].getJSONArray("error").length();
+			if(playerTurnObj[playerID].has("error")) {
+				int length = playerTurnObj[playerID].getJSONArray("error").length();
 				if(length > 0) {
-					return writePlayer(status, "responseCode", 400);
+					return writePlayer(playerID, "responseCode", 400);
 				}
-				return writePlayer(status, "responseCode", 200);
-			}
-			else {
-				playerTurnObj[status].put("error", new JSONArray());
-				return writePlayer(status, "responseCode", 200);
+				return writePlayer(playerID, "responseCode", 200);
+			} else {
+				playerTurnObj[playerID].put("error", new JSONArray());
+				return writePlayer(playerID, "responseCode", 200);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -474,13 +480,12 @@ public class API {
     /**
      * TODO Description goes here
      *
-     * @param status TODO: This file needs more javadoc
+     * @param playerID TODO: This file needs more javadoc
      * @param resources TODO: This file needs more javadoc
      * @return TODO: This file needs more javadoc
      */
-	public static boolean writePlayerResources(int status, int resources) {
-        //TODO Determine if the input to writePlayer given here is a bug
-		boolean writeSuccessful = writePlayer(status, "resources", status);
+	public static boolean writePlayerResources(int playerID, int resources) {
+		boolean writeSuccessful = writePlayer(playerID, "resources", resources);
         return writeSuccessful;
 	}
 

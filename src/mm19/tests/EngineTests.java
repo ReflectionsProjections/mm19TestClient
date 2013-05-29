@@ -2,6 +2,10 @@ package mm19.tests;
 
 import java.util.ArrayList;
 
+import mm19.game.board.Position;
+import mm19.game.ships.DestroyerShip;
+import mm19.game.ships.MainShip;
+import mm19.game.ships.PilotShip;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,6 +20,7 @@ import static org.mockito.Mockito.*;
 // nature of junit, some may fail to to junit presets, not failure in the 
 // function - the errors stem from ship ID wrangling
 
+//TODO Please replace the magic numbers in this file with Constants or named variables.
 public class EngineTests {
 		Engine testGame;
 		API testapi;
@@ -84,22 +89,22 @@ public class EngineTests {
 		
 		public static ArrayList<ShipData> genPlayer(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.MAIN_SHIP, 6, 6, "H"));
+			shipData.add(new ShipData(0, 0, MainShip.IDENTIFIER, 6, 6, Position.Orientation.HORIZONTAL));
 
-			shipData.add(new ShipData(0, 1, Engine.DESTROYER_SHIP, 4, 4, "H"));
-			shipData.add(new ShipData(0, 2, Engine.PILOT_SHIP, 2, 2, "H"));
+			shipData.add(new ShipData(0, 1, DestroyerShip.IDENTIFIER, 4, 4, Position.Orientation.HORIZONTAL));
+			shipData.add(new ShipData(0, 2, PilotShip.IDENTIFIER, 2, 2, Position.Orientation.HORIZONTAL));
 
 			return shipData;
 		}
 		public static ArrayList<ShipData> genBrokenPlayer(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.MAIN_SHIP, 0, 0, "H"));
-			shipData.add(new ShipData(0, 0, Engine.DESTROYER_SHIP, 4, 4, "H"));
+			shipData.add(new ShipData(0, 0, MainShip.IDENTIFIER, 0, 0, Position.Orientation.HORIZONTAL));
+			shipData.add(new ShipData(0, 0, DestroyerShip.IDENTIFIER, 4, 4, Position.Orientation.HORIZONTAL));
 			return shipData;
 		}
 		public static ArrayList<ShipData> genNoMainShip(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
-			shipData.add(new ShipData(0, 0, Engine.DESTROYER_SHIP, 4, 4, "H"));
+			shipData.add(new ShipData(0, 0, DestroyerShip.IDENTIFIER, 4, 4, Position.Orientation.HORIZONTAL));
 			return shipData;
 		}
 
@@ -107,7 +112,7 @@ public class EngineTests {
 			ArrayList<Action> move = new ArrayList<Action>();
 			//the first number in the Action(s) here are magic dependent on the known placement w/n the board
 			//and this one is wrong though move works
-			move.add(new Action(1,"MH",4,5,0));
+			move.add(new Action(1, Action.Type.MOVE_HORIZONTAL, 4, 5, 0));
 			                                    
 			return move;
 		}
@@ -115,20 +120,20 @@ public class EngineTests {
 		public static ArrayList<Action> genFire(){
             ArrayList<Action> move = new ArrayList<Action>();
             //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(0,"F",4,4,0)); 
-            move.add(new Action(1,"F",4,4,0));
+            move.add(new Action(0, Action.Type.SHOOT, 4, 4, 0));
+            move.add(new Action(1, Action.Type.SHOOT, 4, 4, 0));
             return move;
         }
 		public static ArrayList<Action> genSonar(){
             ArrayList<Action> move = new ArrayList<Action>();
             //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(23,"S",4,4,0));
+            move.add(new Action(23, Action.Type.SONAR, 4, 4, 0));
             return move;
         }
 		public static ArrayList<Action> genBurst(){
             ArrayList<Action> move = new ArrayList<Action>();
             //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(19,"BS",4,4,0));
+            move.add(new Action(19, Action.Type.BURST_SHOT, 4, 4, 0));
             return move;
         }
 
