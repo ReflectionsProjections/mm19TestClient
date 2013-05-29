@@ -59,6 +59,47 @@ public class Engine{
     }
 
     /**
+     * Returns the player ID associated with a token.
+     *
+     * @param playerToken String of the token to search for.
+     * @return ID of the player found.  -1 if no match.
+     */
+    public int getPlayerIDByToken(String playerToken ) {
+        int playerID = -1;
+        for(int i = 0; i < Constants.PLAYER_COUNT; i++) {
+            if(playerToken.equals(playerTokens[i])) {
+                playerID = i;
+                break;
+            }
+        }
+        return playerID;
+    }
+
+    /**
+     * Returns the token associated with a player
+     *
+     * @param playerID ID of player to retrieve token for.
+     * @return The token, empty string if playerID is invalid.
+     */
+    public String getPlayerTokenByID(int playerID) {
+        if(playerID >= 0 && playerID < Constants.PLAYER_COUNT){
+            return playerTokens[playerID];
+        }
+        return "";
+    }
+
+    /**
+     * Sets the token for the given player
+     *
+     * @param playerID ID of the player
+     * @param token Token to set
+     */
+    public void setPlayerToken(int playerID, String token) {
+        playerTokens[playerID] = token;
+    }
+
+
+    /**
      * Determines who has won a tie game
      * The player with the highest total ship health wins
      * If tied, the player with the most resources wins
