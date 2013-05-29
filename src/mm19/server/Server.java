@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mm19.game.Constants;
 import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.json.JSONArray;
@@ -28,7 +29,7 @@ public class Server {
 
 	// Server constants for now, configurable later
 	public static final int PORT = 6969;
-	public static final int MAX_PLAYERS = 2;
+
 	public static final int MAX_THREADS = 8;
 	public static final String LOG_PATH = "server_log.txt";
 	public static final Level LOG_LEVEL = Level.INFO;
@@ -83,19 +84,21 @@ public class Server {
 	@SuppressWarnings("unused")
 	private static boolean initServer() {
 
-		clientSockets = new Socket[MAX_PLAYERS];
+		clientSockets = new Socket[Constants.PLAYER_COUNT];
 
-		playerToken = new String[MAX_PLAYERS];
+		playerToken = new String[Constants.PLAYER_COUNT];
 		for(String token : playerToken) {
 			token = "";
 		}
 		
-		connected = new boolean[MAX_PLAYERS];
+		connected = new boolean[Constants.PLAYER_COUNT];
 		for(boolean c : connected) {
 			c = false;
 		}
 
 		bte = new BasicTextEncryptor();
+
+        //TODO We are calling to string on an array here
 		bte.setPassword((new RandomSaltGenerator().generateSalt(10)).toString());
 
 		// TODO: Set up logging to a file
@@ -148,7 +151,7 @@ public class Server {
 				// JSONObject with a playerName key.
 				String s = in.readLine();
 
-				serverLog.log(Level.INFO, "Recieved player info");
+				serverLog.log(Level.INFO, "Received player info");
 
 				try {
 					// Check to see if we are sent valid data.
@@ -156,9 +159,10 @@ public class Server {
 					if (obj.has("playerName")) {
 						// Create the player token
 						String name = obj.getString("playerName");
-						name = name
-								+ (new RandomSaltGenerator().generateSalt(10)
-										.toString());
+
+                        //TODO We are calling toString on an array here
+						name = name + (new RandomSaltGenerator().generateSalt(10).toString());
+
 						clientSockets[currPlayerID] = clientSocket;
 						playerToken[currPlayerID] = name;
 						connected[currPlayerID] = true;

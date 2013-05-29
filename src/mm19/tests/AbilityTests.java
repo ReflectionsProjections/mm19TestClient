@@ -1,12 +1,12 @@
 package mm19.tests;
+import mm19.TestUtilities;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
 import mm19.game.Ability;
 import mm19.game.Constants;
+import mm19.game.Engine;
 import mm19.game.HitReport;
-import mm19.game.board.Board;
-import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
@@ -26,70 +26,16 @@ import static org.junit.Assert.*;
  */
 public class AbilityTests {
 
-    private Player initializePlayer() {
-        ArrayList<Ship> ships = new ArrayList<Ship>();
-        ArrayList<Position> positions = new ArrayList<Position>();
-
-        //player SHIP SETUP
-        //#1 MainShip
-        ships.add(new MainShip());
-        positions.add(new Position(MainShip.LENGTH-1, 0, Position.Orientation.HORIZONTAL));
-
-        //#2 DestroyerShip
-        ships.add(new DestroyerShip());
-        positions.add(new Position(DestroyerShip.LENGTH-1, 1, Position.Orientation.HORIZONTAL));
-
-        //#3 DestroyerShip
-        ships.add(new DestroyerShip());
-        positions.add(new Position(DestroyerShip.LENGTH-1, 2, Position.Orientation.HORIZONTAL));
-
-        //#4 PilotShip
-        ships.add(new PilotShip());
-        positions.add(new Position(PilotShip.LENGTH-1, 3, Position.Orientation.HORIZONTAL));
-
-        //#5 PilotShip
-        ships.add(new PilotShip());
-        positions.add(new Position(PilotShip.LENGTH-1, 4, Position.Orientation.HORIZONTAL));
-
-        return initializePlayer(ships, positions);
-    }
-    
-    private Player initializePlayer(ArrayList<Ship> ships, ArrayList<Position> positions) {
-        Player player = new Player(Constants.STARTING_RESOURCES);
-        
-        Ability.setupBoard(player, ships, positions);
-
-        return player;
-    }
-
     @Test
     public void testResetAbilityStates() {
         //TODO: Use some abilities, call resetAbilityStates and check states
     }
 
-    @Test
-    public void testBreakTie() {
-        Player attacker = initializePlayer();
-        Player defender = initializePlayer();
-
-        assertEquals(defender, Ability.breakTie(attacker, defender));
-        assertEquals(attacker, Ability.breakTie(defender, attacker));
-
-        defender.takeResources(1);
-        assertEquals(attacker, Ability.breakTie(attacker, defender));
-        assertEquals(attacker, Ability.breakTie(defender, attacker));
-
-        Board attackerBoard = attacker.getBoard();
-        ArrayList<Ship> attackerShips = attackerBoard.getShips();
-        attackerShips.get(0).applyDamage(1);
-        assertEquals(defender, Ability.breakTie(attacker, defender));
-        assertEquals(defender, Ability.breakTie(defender, attacker));
-    }
 
     @Test
     public void testGatherResources() {
-        Player attacker = initializePlayer();
-        Player defender = initializePlayer();
+        Player attacker = TestUtilities.initializePlayer();
+        Player defender = TestUtilities.initializePlayer();
 
         int resourcesWithAllShips = 1*MainShip.RESOURCES_GENERATED
                 + 2*DestroyerShip.RESOURCES_GENERATED
@@ -108,8 +54,8 @@ public class AbilityTests {
 
     @Test
     public void testShoot() {
-        Player attacker = initializePlayer();
-        Player defender = initializePlayer();
+        Player attacker = TestUtilities.initializePlayer();
+        Player defender = TestUtilities.initializePlayer();
 
         int width = defender.getBoard().getWidth();
         int height = defender.getBoard().getHeight();
@@ -125,9 +71,9 @@ public class AbilityTests {
         ArrayList<Ship> attackerShips = attacker.getBoard().getShips();
 
         Ship attackerShip = null;
-        for(int i = 0; i < attackerShips.size(); i++) {
-            if(!attackerShips.get(i).canShoot()){
-                attackerShip = attackerShips.get(i);
+        for (Ship attackerShip1 : attackerShips) {
+            if (!attackerShip1.canShoot()) {
+                attackerShip = attackerShip1;
                 break;
             }
         }
@@ -142,9 +88,9 @@ public class AbilityTests {
         }
 
         attackerShip = null;
-        for(int i = 0; i < attackerShips.size(); i++) {
-            if(attackerShips.get(i).canShoot()){
-                attackerShip = attackerShips.get(i);
+        for (Ship attackerShip1 : attackerShips) {
+            if (attackerShip1.canShoot()) {
+                attackerShip = attackerShip1;
                 break;
             }
         }

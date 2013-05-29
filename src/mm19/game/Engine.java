@@ -6,6 +6,7 @@ import java.util.Timer;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
+import mm19.game.board.Board;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
@@ -58,6 +59,43 @@ public class Engine{
     }
 
     /**
+     * Determines who has won a tie game
+     * The player with the highest total ship health wins
+     * If tied, the player with the most resources wins
+     * If tied, player 2 wins
+     *
+     * @param p1 The first player that tied
+     * @param p2 The second player that tied
+     * @return returns the player that has been chosen as victor
+     */
+    public static Player breakTie(Player p1, Player p2){
+        //TODO Move to engine class
+    	int p1Health = 0;
+    	int p2Health = 0;
+    	Board board = p1.getBoard();
+        ArrayList<Ship> ships = board.getShips();
+        for (Ship ship : ships) {
+            if(ship.canGenerateResources()) {
+                p1Health += ship.getHealth();
+            }
+        }
+        board = p2.getBoard();
+        ships = board.getShips();
+        for (Ship ship : ships) {
+            if(ship.canGenerateResources()) {
+                p2Health += ship.getHealth();
+            }
+        }
+        if(p1Health > p2Health) return p1;
+        if(p2Health > p1Health) return p2;
+
+        if(p1.getResources() > p2.getResources()) return p1;
+        if(p2.getResources() > p1.getResources()) return p2;
+
+    	return p2;
+    }
+
+    /**
      * Helper for handling the exceptions thrown by the Ability class
      * @param ee The EngineException thrown
      * @param playerID The current player's id
@@ -98,14 +136,10 @@ public class Engine{
 				tempShip = new PilotShip();
 			}
 			if(tempShip != null){
-				if(shipDatas.get(i).orientation.equals("H")){
-					tempPos = new Position(shipDatas.get(i).xCoord, 
-							shipDatas.get(i).yCoord, 
-							Position.Orientation.HORIZONTAL);
+				if(shipDatas.get(i).orientation == Position.Orientation.HORIZONTAL){
+					tempPos = new Position(shipDatas.get(i).xCoord,	shipDatas.get(i).yCoord, Position.Orientation.HORIZONTAL);
 				}else{
-					tempPos = new Position(shipDatas.get(i).xCoord, 
-							shipDatas.get(i).yCoord, 
-							Position.Orientation.VERTICAL);
+					tempPos = new Position(shipDatas.get(i).xCoord, shipDatas.get(i).yCoord, Position.Orientation.VERTICAL);
 				}
 				
 				ships.add(tempShip);
@@ -124,7 +158,7 @@ public class Engine{
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
 		
 		if (!(setupShips && player.isAlive())) {
-			API.writePlayerError(turn%2, "Unable to setup ships due to bad positions");
+			API.writePlayerError(turn % 2, "Unable to setup ships due to bad positions");
 			API.writePlayerResponseCode(turn%2);
 			return -1;
 			}
@@ -275,7 +309,7 @@ public class Engine{
 	public void endOfTurn(Player player, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
         //TODO: generalize...
 		if(!players[0].isAlive() && !players[1].isAlive()){
-			API.hasWon(Ability.breakTie(players[0], players[1]).getPlayerID());
+			API.hasWon(breakTie(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
 			System.out.println("P2 wins!");
@@ -287,7 +321,7 @@ public class Engine{
 		} else if(turn > TURN_LIMIT){
 			//Tie game, break the tie
 			System.out.println("Tie!");
-			API.hasWon(Ability.breakTie(players[0], players[1]).getPlayerID());
+			API.hasWon(breakTie(players[0], players[1]).getPlayerID());
 			
 		} else{
 			//Send data to both players

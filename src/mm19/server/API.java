@@ -54,11 +54,11 @@ public class API {
     /**
      * TODO Description goes here
      *
-     * @param obj TODO: This file needs more javadoc
+     * @param json TODO: This file needs more javadoc
      * @param playerToken TODO: This file needs more javadoc
      * @return TODO: This file needs more javadoc
      */
-	public static boolean newData(JSONObject obj, String playerToken) {
+	public static boolean newData(JSONObject json, String playerToken) {
         //TODO: Determine better name for method -Eric
 		int playerID;
 		String playerName;
@@ -68,10 +68,10 @@ public class API {
 		ArrayList<ShipData> ships;
 
 		try {
-            if(obj.has("playerName") && obj.has("mainShip") && obj.has("ships")) {
-                playerName = obj.getString("playerName");
-                mainShipJSON = (JSONObject) obj.get("mainShip");
-                shipsJSONArray = (JSONArray) obj.get("ships");
+            if(json.has("playerName") && json.has("mainShip") && json.has("ships")) {
+                playerName = json.getString("playerName");
+                mainShipJSON = (JSONObject) json.get("mainShip");
+                shipsJSONArray = (JSONArray) json.get("ships");
             } else {
                 return false;
             }
@@ -406,8 +406,7 @@ public class API {
 				shipsJson.put(tempShip);
 		}
 
-		boolean writeSuccessful = writePlayer(status, "ships", (Object) shipsJson);
-		return writeSuccessful;
+		return writePlayer(status, "ships", shipsJson);
 	}
 
 	/**
@@ -482,11 +481,10 @@ public class API {
      *
      * @param playerID TODO: This file needs more javadoc
      * @param resources TODO: This file needs more javadoc
-     * @return TODO: This file needs more javadoc
+     * @return Boolean indicating if write is successful
      */
 	public static boolean writePlayerResources(int playerID, int resources) {
-		boolean writeSuccessful = writePlayer(playerID, "resources", resources);
-        return writeSuccessful;
+		return writePlayer(playerID, "resources", resources);
 	}
 
 	/**
@@ -508,8 +506,7 @@ public class API {
 				hitsJson.put(tempHit);
 		}
 
-		boolean writeSuccessful = writePlayer(playerID, "hitReport", hitsJson);
-		return writeSuccessful;
+		return writePlayer(playerID, "hitReport", hitsJson);
 	}
 
 	/**
@@ -531,8 +528,7 @@ public class API {
 				hitsJson.put(tempHit);
 		}
 
-		boolean writeSuccessful = writePlayer(playerID, "enemyHitReport", hitsJson);
-		return writeSuccessful;
+		return writePlayer(playerID, "enemyHitReport", hitsJson);
 	}
 
 	/**
@@ -576,8 +572,7 @@ public class API {
 				pingsJson.put(tempPing);
 		}
 
-        boolean writeSuccessful = writePlayer(playerID, "pingReport", pingsJson);
-        return writeSuccessful;
+        return writePlayer(playerID, "pingReport", pingsJson);
 	}
 
 	/**
@@ -621,8 +616,7 @@ public class API {
 				resultsJson.put(tempResult);
 		}
 
-        boolean writeSuccessful = writePlayer(playerID, "shipActionResults", resultsJson);
-	    return writeSuccessful;
+        return writePlayer(playerID, "shipActionResults", resultsJson);
 	}
 
 	/**

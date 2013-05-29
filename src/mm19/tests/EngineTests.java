@@ -2,10 +2,13 @@ package mm19.tests;
 
 import java.util.ArrayList;
 
+import mm19.TestUtilities;
 import mm19.game.board.Position;
+import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
+import mm19.game.ships.Ship;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +17,7 @@ import mm19.game.Engine;
 import mm19.server.API;
 import mm19.server.ShipData;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 // Note: please run all tests individually, due to the nondeterministic 
@@ -136,5 +140,36 @@ public class EngineTests {
             move.add(new Action(19, Action.Type.BURST_SHOT, 4, 4, 0));
             return move;
         }
+
+
+    @Test
+    public void testBreakTie() {
+        Player player1 = TestUtilities.initializePlayer();
+        Player player2 = TestUtilities.initializePlayer();
+
+        //All things equal, player in second argument wins.
+        assertEquals(player2, Engine.breakTie(player1, player2));
+        assertEquals(player1, Engine.breakTie(player2, player1));
+
+        //Resource count has precedence over equal conditions.
+        player2.takeResources(1);
+        assertEquals(player1, Engine.breakTie(player1, player2));
+        assertEquals(player1, Engine.breakTie(player2, player1));
+
+        //Health of resource generating ships has precedence over resource count.
+        Ship damagedShip = null;
+        ArrayList<Ship> ships = player1.getBoard().getShips();
+        for( Ship ship : ships ){
+            if(ship.canGenerateResources()){
+                damagedShip = ship;
+                damagedShip.applyDamage(1);
+                break;
+            }
+        }
+        assertNotNull("BrokenTest: Player1 has no resource generating ships", damagedShip);
+
+        assertEquals(player2, Engine.breakTie(player2, player1));
+        assertEquals(player2, Engine.breakTie(player1, player2));
+    }
 
 }
