@@ -46,51 +46,6 @@ public class EngineTests {
 			
 		}
 		
-		@Test
-		public void testFire(){
-		    testGame = new Engine();
-		    testGame.playerSet(genPlayer(), "A");
-            testGame.playerSet(genPlayer(), "B");
-            testGame.playerTurn("A", genFire()); // should hit 
-            testGame.playerTurn("A", genFire()); // should 1 hit 1 not enough money
-            testGame.playerTurn("A", genFire()); // should any hit not enough money
-            testGame.playerTurn("A", genFire()); // should 1 hit kill 1 not enough money
-            testGame.playerTurn("A", genFire()); // should 1 hit miss 1 not enough money
-		}
-		
-		@Test
-		public void testMove(){
-
-		    testGame = new Engine();
-			testGame.playerSet(genPlayer(), "A");
-			testGame.playerSet(genPlayer(), "B");
-			testGame.playerTurn("A", genMove()); //Cannot move Destroyer
-			testGame.playerTurn("A", new ArrayList<Action>()); //wait
-			testGame.playerTurn("A", new ArrayList<Action>()); //wait
-			testGame.playerTurn("A", genMove()); //CAN move Destroyer
-
-		}
-		
-		@Test
-		public void testSonar(){
-		    testGame = new Engine();
-		    testGame.playerSet(genPlayer(), "A");
-            testGame.playerSet(genPlayer(), "B");
-            testGame.playerTurn("A", genSonar()); // should return positive
-		}
-		
-		@Test
-		public void testBurst(){
-		    testGame = new Engine();
-            testGame.playerSet(genPlayer(), "A");
-            testGame.playerSet(genPlayer(), "B");
-            testGame.playerTurn("A", genBurst()); // not enough money
-            testGame.playerTurn("A", genBurst()); // should go boom
-            testGame.playerTurn("A", genBurst()); // not enough money
-            testGame.playerTurn("A", genBurst()); // not enough money
-			
-		}
-		
 		public static ArrayList<ShipData> genPlayer(){
 			ArrayList<ShipData> shipData = new ArrayList<ShipData>();
 			shipData.add(new ShipData(0, 0, MainShip.IDENTIFIER, 6, 6, Position.Orientation.HORIZONTAL));
@@ -111,36 +66,6 @@ public class EngineTests {
 			shipData.add(new ShipData(0, 0, DestroyerShip.IDENTIFIER, 4, 4, Position.Orientation.HORIZONTAL));
 			return shipData;
 		}
-
-		public static ArrayList<Action> genMove(){
-			ArrayList<Action> move = new ArrayList<Action>();
-			//the first number in the Action(s) here are magic dependent on the known placement w/n the board
-			//and this one is wrong though move works
-			move.add(new Action(1, Action.Type.MOVE_HORIZONTAL, 4, 5, 0));
-			                                    
-			return move;
-		}
-		
-		public static ArrayList<Action> genFire(){
-            ArrayList<Action> move = new ArrayList<Action>();
-            //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(0, Action.Type.SHOOT, 4, 4, 0));
-            move.add(new Action(1, Action.Type.SHOOT, 4, 4, 0));
-            return move;
-        }
-		public static ArrayList<Action> genSonar(){
-            ArrayList<Action> move = new ArrayList<Action>();
-            //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(23, Action.Type.SONAR, 4, 4, 0));
-            return move;
-        }
-		public static ArrayList<Action> genBurst(){
-            ArrayList<Action> move = new ArrayList<Action>();
-            //the first number in the Action(s) here are magic dependent on the known placement w/n the board
-            move.add(new Action(19, Action.Type.BURST_SHOT, 4, 4, 0));
-            return move;
-        }
-
 
     @Test
     public void testBreakTie() {
