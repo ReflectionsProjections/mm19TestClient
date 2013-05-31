@@ -24,9 +24,18 @@ import org.json.JSONObject;
 public class API {
     //TODO: This file needs more javadoc
 
+    /*
+     * TODO Static methods should only operate on their parameters, not class fields.
+     * If we really want a singleton, then just instantiate one API object.
+     */
+
 	private static JSONObject[] playerTurnObj;
+
+    //TODO Move playerNames to a field in Player class and access with Engine and Player methods
 	private static String[] playerNames;
 	private static Engine game;
+
+    //TODO Eliminate current API management of game state.  Such behavior crosses over class responsibility boundaries.
 	private static int ID = 0;
 
     /**
@@ -75,11 +84,12 @@ public class API {
 
 			if ( playerName != null && mainShipJSON != null && shipsJSONArray != null) {
                 mainShipJSON.put("type", MainShip.IDENTIFIER);
-                mainShip = ShipData.getShipDataByJSON(mainShipJSON);
+                mainShip = ShipData.fromJSON(mainShipJSON);
 
-                ships = ShipData.getShipDataListByJSON(shipsJSONArray);
+                ships = ShipData.fromJSONArray(shipsJSONArray);
 
                 //TODO determine if pruning excess ship declarations is better than rejecting request.
+                //TODO Determine what happens if fewer than Constants.MAX_SHIPS-1 are in the array.
                 ArrayList<ShipData> temp = new ArrayList<ShipData>();
                 for(int i = 0; i < Constants.MAX_SHIPS-1; i++) {
                     temp.add(ships.get(i));
@@ -150,7 +160,7 @@ public class API {
             }
 
             JSONArray actionListObj = obj.getJSONArray("shipActions");
-            ArrayList<Action> actionList = Action.getActionListByJSON(actionListObj);
+            ArrayList<Action> actionList = Action.fromJSONArray(actionListObj);
 
             boolean success = game.playerTurn(playerToken, actionList);
 
@@ -223,7 +233,6 @@ public class API {
 		}
 
 		return null;
-
 	}
 	
 	/**
@@ -253,18 +262,17 @@ public class API {
 	 * @return - boolean indicating if write was successful
 	 */
 	public static boolean writePlayerShips(int status, ArrayList<ShipData> ships) {
-		JSONArray shipsJson = new JSONArray();
-		JSONObject tempShip;
-		int length = ships.size();
-        //TODO Change to for loop
-		while (length > 0) {
-			length--;
-            //TODO Please don't assign in the if conditional...
-			if ((tempShip = makeShipJSON(ships.get(length))) != null)
-				shipsJson.put(tempShip);
+		JSONArray shipDataJSONArray = new JSONArray();
+
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = ships.size()-1; i >= 0; i--) {
+            JSONObject shipDataJSON = makeShipJSON(ships.get(i));
+			if (shipDataJSON != null) {
+				shipDataJSONArray.put(shipDataJSON);
+            }
 		}
 
-		return writePlayer(status, "ships", shipsJson);
+		return writePlayer(status, "ships", shipDataJSONArray);
 	}
 
 	/**
@@ -316,8 +324,7 @@ public class API {
 	public static boolean writePlayerResponseCode(int playerID) {
 		try {
 
-            //TODO Rearrange code so there is only a since writePlayer call.
-            //TODO Store result of writePlayer in well named boolean variable and return that
+            //TODO Rearrange code so there is only a single writePlayer call.
 			if(playerTurnObj[playerID].has("error")) {
 				int length = playerTurnObj[playerID].getJSONArray("error").length();
 				if(length > 0) {
@@ -353,19 +360,17 @@ public class API {
 	 * @return Boolean indicating if write was successful
 	 */
 	public static boolean writePlayerHits(int playerID, ArrayList<HitReport> hits) {
-		JSONArray hitsJson = new JSONArray();
-		JSONObject tempHit;
-		int length = hits.size();
+		JSONArray hitReportJSONArray = new JSONArray();
+
         //TODO Determine why we construct these by reverse iteration
-        //TODO Change to for loop
-		while (length > 0) {
-			length--;
-            //TODO Please don't assign in the if conditional...
-			if ((tempHit = makeHitJSON(hits.get(length))) != null)
-				hitsJson.put(tempHit);
+        for (int i = hits.size()-1; i >= 0; i--) {
+            JSONObject hitReportJSON = makeHitJSON(hits.get(i));
+			if (hitReportJSON != null) {
+				hitReportJSONArray.put(hitReportJSON);
+            }
 		}
 
-		return writePlayer(playerID, "hitReport", hitsJson);
+		return writePlayer(playerID, "hitReport", hitReportJSONArray);
 	}
 
 	/**
@@ -376,19 +381,18 @@ public class API {
 	 * @return Boolean that indicates if write was successful
 	 */
 	public static boolean writePlayerEnemyHits(int playerID, ArrayList<HitReport> hits) {
-		JSONArray hitsJson = new JSONArray();
-		JSONObject tempHit;
-		int length = hits.size();
-        //TODO Determine why we construct these by reverse iteration
-        //TODO Change to for loop
-		while (length > 0) {
-			length--;
-            //TODO Please don't assign in the if conditional...
-			if ((tempHit = makeHitJSON(hits.get(length))) != null)
-				hitsJson.put(tempHit);
-		}
+        //TODO This function is identical to writePlayerHits except for a single string... wtf
+        JSONArray hitReportJSONArray = new JSONArray();
 
-		return writePlayer(playerID, "enemyHitReport", hitsJson);
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = hits.size()-1; i >= 0; i--) {
+            JSONObject hitReportJSON = makeHitJSON(hits.get(i));
+            if (hitReportJSON != null) {
+                hitReportJSONArray.put(hitReportJSON);
+            }
+        }
+
+        return writePlayer(playerID, "enemyHitReport", hitReportJSONArray);
 	}
 
 	/**
@@ -398,6 +402,7 @@ public class API {
 	 * @return JSONObject containing the HitReport's data
 	 */
 	private static JSONObject makeHitJSON(HitReport report) {
+        //TODO Move to HitReport class and name it toJSON()
 		JSONObject tempHit = new JSONObject();
 		try {
 			tempHit.put("xCoord", report.x);
@@ -424,8 +429,9 @@ public class API {
         //TODO Determine why we construct these by reverse iteration
         for (int i = sonarReports.size()-1; i >= 0; i--) {
             JSONObject pingReport = makePingReportJSON(sonarReports.get(i));
-			if (pingReport != null)
+			if (pingReport != null) {
 				pingReportsJSON.put(pingReport);
+            }
 		}
 
         return writePlayer(playerID, "pingReport", pingReportsJSON);
@@ -438,6 +444,7 @@ public class API {
 	 * @return JSONObject containing the SonarReport's data
 	 */
 	private static JSONObject makePingReportJSON(SonarReport sonarReport) {
+        //TODO Move to SonarReport class and name it toJSON()
 		JSONObject pingReportJSON = new JSONObject();
 
 		try {
@@ -454,23 +461,21 @@ public class API {
      * TODO Description goes here
      *
 	 * @param playerID player to write to
-	 * @param results array list of current action results
+	 * @param shipActionResults array list of current action results
 	 * @return Boolean indicating if write was successful
 	 */
-	public static boolean writePlayerResults(int playerID, ArrayList<ShipActionResult> results) {
-		JSONArray resultsJson = new JSONArray();
-        //TODO Naming: results and tempResult...
-		JSONObject tempResult;
-		int length = results.size();
-        //TODO change to for loop
-		while (length > 0) {
-			length--;
-            //TODO Please don't assign in the if conditional...
-			if ((tempResult = makeResultJSON(results.get(length))) != null)
-				resultsJson.put(tempResult);
+	public static boolean writePlayerResults(int playerID, ArrayList<ShipActionResult> shipActionResults) {
+		JSONArray shipActionResultsJSONArray = new JSONArray();
+
+        //TODO Determine why we construct these by reverse iteration
+        for (int i = shipActionResults.size()-1; i >= 0; i--) {
+            JSONObject shipActionResultJSON = makeResultJSON(shipActionResults.get(i));
+			if (shipActionResultJSON != null) {
+				shipActionResultsJSONArray.put(shipActionResultJSON);
+            }
 		}
 
-        return writePlayer(playerID, "shipActionResults", resultsJson);
+        return writePlayer(playerID, "shipActionResults", shipActionResultsJSONArray);
 	}
 
 	/**
@@ -480,6 +485,7 @@ public class API {
 	 * @return JSONObject containing the ShipActionResult's data
 	 */
 	private static JSONObject makeResultJSON(ShipActionResult result) {
+        //TODO Move to ShipActionResult and rename as toJSON()
         //TODO Rename function
         //TODO Naming: result and tempResult...
         JSONObject tempResult = new JSONObject();

@@ -138,18 +138,18 @@ public class Engine{
 
     /**
      * Helper for handling the exceptions thrown by the Ability class
-     * @param ee The EngineException thrown
+     * @param e The EngineException thrown
      * @param playerID The current player's id
      * @param action The action attempted when the exception was thrown.
      * @param turnResults The results object to update
      */
-    private void handleEngineException(EngineException ee, int playerID, Action action, ArrayList<ShipActionResult> turnResults) {
-        if(ee instanceof InputException) {
+    private void handleEngineException(EngineException e, int playerID, Action action, ArrayList<ShipActionResult> turnResults) {
+        if(e instanceof InputException) {
             turnResults.add(new ShipActionResult(action.shipID, INPUT_EXCEPTION_IDENTIFIER));
-        } else if (ee instanceof ResourceException) {
+        } else if (e instanceof ResourceException) {
             turnResults.add(new ShipActionResult(action.shipID, RESOURCE_EXCEPTION_IDENTIFIER));
         }
-        API.writePlayerError(playerID, ee.getMessage());
+        API.writePlayerError(playerID, e.getMessage());
     }
 	
     /**
@@ -276,8 +276,8 @@ public class Engine{
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					hits.add(hitResponse);
 					opponentHits.add(hitResponse);
-				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, action, turnResults);
+				} catch(EngineException e){
+                    handleEngineException(e, playerID, action, turnResults);
 				}
 			} else if (action.actionID == Action.Type.BURST_SHOT) {
 				try{
@@ -289,16 +289,16 @@ public class Engine{
 							opponentHits.add(hitReport);
 						}
 					}
-				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, action, turnResults);
+				} catch(EngineException e){
+                    handleEngineException(e, playerID, action, turnResults);
                 }
 			} else if (action.actionID == Action.Type.SONAR) {
 				try{
 					ArrayList<SonarReport> sonarResponse = Ability.sonar(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					pings.addAll(sonarResponse);
-				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, action, turnResults);
+				} catch(EngineException e){
+                    handleEngineException(e, playerID, action, turnResults);
                 }
 			} else if (action.actionID == Action.Type.MOVE_HORIZONTAL || action.actionID == Action.Type.MOVE_VERTICAL) {
                 Position.Orientation orientation;
@@ -312,8 +312,8 @@ public class Engine{
                     //TODO: Ask why move success (moveResponse) is not relayed to player.
 					boolean moveResponse = Ability.move(player, action.shipID, new Position(action.actionXVar, action.actionYVar, orientation));
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
-				} catch(EngineException ee){
-                    handleEngineException(ee, playerID, action, turnResults);
+				} catch(EngineException e){
+                    handleEngineException(e, playerID, action, turnResults);
                 }
 			}
 		}

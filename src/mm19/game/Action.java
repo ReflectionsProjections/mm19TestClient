@@ -35,7 +35,7 @@ public class Action {
 		this.actionExtraVar = extra;
 	}
 
-    public static Type getActionTypeByIdentifier(String identifier) {
+    public static Type getTypeByIdentifier(String identifier) {
         if (identifier.equals(BURST_SHOT_IDENTIFIER)) {
             return Type.BURST_SHOT;
         } else if (identifier.equals(MOVE_HORIZONTAL_IDENTIFIER)) {
@@ -53,7 +53,7 @@ public class Action {
         }
     }
 
-    public static String getActionIdentifierByType(Type actionType) {
+    public static String getIdentifierByType(Type actionType) {
         if (actionType == Type.BURST_SHOT) {
             return BURST_SHOT_IDENTIFIER;
         } else if (actionType == Type.MOVE_HORIZONTAL) {
@@ -78,7 +78,7 @@ public class Action {
      * @return - returns the associated Action if the given JSON object contains
      *         a valid Action, null otherwise
      */
-    public static Action getActionByJSON(JSONObject obj) {
+    public static Action fromJSON(JSONObject obj) {
         try {
             if (obj.has("actionID") && obj.has("ID") && obj.has("actionX") && obj.has("actionY") && obj.has("actionExtra")) {
                 String actionID = obj.getString("actionID");
@@ -88,7 +88,7 @@ public class Action {
                 //TODO Determine what goes in actionExtra and why it is an int instead of an enum
                 int actionExtra = obj.getInt("actionExtra");
 
-                Type actionType = getActionTypeByIdentifier(actionID);
+                Type actionType = getTypeByIdentifier(actionID);
                 return new Action(shipID, actionType, actionX, actionY, actionExtra);
             }
         } catch (JSONException e) {
@@ -104,14 +104,14 @@ public class Action {
      * @param actionsJSONArray TODO: This file needs more javadoc
      * @return An ArrayList of Actions if the given JSONArray contains such, null otherwise
      */
-    public static ArrayList<Action> getActionListByJSON(JSONArray actionsJSONArray) {
+    public static ArrayList<Action> fromJSONArray(JSONArray actionsJSONArray) {
         ArrayList<Action> actions = new ArrayList<Action>();
 
         //TODO Determine if iterating in reverse order causes actions to occur in order player intended -Eric
         for (int i = actionsJSONArray.length()-1; i >= 0; i--) {
             try {
                 JSONObject actionJSON = actionsJSONArray.getJSONObject(i);
-                Action action = getActionByJSON(actionJSON);
+                Action action = fromJSON(actionJSON);
                 if (action != null) {
                     actions.add(action);
                 }

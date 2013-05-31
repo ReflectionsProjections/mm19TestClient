@@ -35,7 +35,7 @@ public class ShipData {
      * @param obj TODO: This file needs more javadoc
      * @return A valid ShipData if the given JSONObject contains such, null otherwise
      */
-    public static ShipData getShipDataByJSON(JSONObject obj) {
+    public static ShipData fromJSON(JSONObject obj) {
         int health;
         int ID;
         String type;
@@ -77,19 +77,19 @@ public class ShipData {
      * @param shipsJSONArray JSONArray containing the data need to create ShipData objects
      * @return An ArrayList of ShipData objects.
      */
-    public static ArrayList<ShipData> getShipDataListByJSON(JSONArray shipsJSONArray) {
+    public static ArrayList<ShipData> fromJSONArray(JSONArray shipsJSONArray) {
         try {
             ArrayList<ShipData> ships = new ArrayList<ShipData>();
             for(int i = 0; i < shipsJSONArray.length(); i++) {
-                ShipData shipData = getShipDataByJSON(shipsJSONArray.getJSONObject(i));
+                ShipData shipData = fromJSON(shipsJSONArray.getJSONObject(i));
                 if(shipData != null) {
                     ships.add(shipData);
                 }
 
             }
             return ships;
-        } catch (JSONException je) {
-            je.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return null;
     }
