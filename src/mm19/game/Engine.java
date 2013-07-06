@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 
 import mm19.api.API;
+import mm19.api.ShipActionResult;
+import mm19.api.ShipData;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
@@ -14,8 +16,6 @@ import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
-import mm19.server.ShipActionResult;
-import mm19.server.ShipData;
 
 
 /**

@@ -10,8 +10,6 @@ import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.server.Server;
 import mm19.server.ServerTimerTask;
-import mm19.server.ShipActionResult;
-import mm19.server.ShipData;
 
 import org.json.JSONArray;
 import org.json.JSONException;

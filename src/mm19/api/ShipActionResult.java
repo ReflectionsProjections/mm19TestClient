@@ -1,4 +1,4 @@
-package mm19.server;
+package mm19.api;
 
 public class ShipActionResult {
 

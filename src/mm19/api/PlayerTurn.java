@@ -1,4 +1,4 @@
-package mm19.server;
+package mm19.api;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import mm19.game.HitReport;
  * This ServerResponse class is a java representation of the JSON the server will 
  * send Upon a successful, or partially successful submission.
  */
-public class ServerResponse {
+public class PlayerTurn {
 	
 	public List<ShipActionResult> shipActionResults;
 	public int responseCode;
@@ -20,7 +20,7 @@ public class ServerResponse {
 	public List<ShipData> ships;
 
 
-	public ServerResponse(List error,String PlayerName,int PlayerID,int resources,List<ShipData> ships)
+	public PlayerTurn(List error,String PlayerName,int PlayerID,int resources,List<ShipData> ships)
 	{
 		this.error=error;
 		this.playerID=playerID;

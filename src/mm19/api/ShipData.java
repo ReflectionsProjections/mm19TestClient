@@ -1,4 +1,4 @@
-package mm19.server;
+package mm19.api;
 
 import mm19.game.Constants;
 import mm19.game.board.Position;
