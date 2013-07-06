@@ -38,6 +38,7 @@ public class Requester extends Thread{
 				
 				// Formulate a ServerResponse object from the server's response
 				ServerResponse sr = new ServerResponse(new JSONObject(s));
+				System.out.println(sr.toString());
 				// Call the appropriate method.
 				if(sr.responseCode == 100) {
 					System.out.println(testClient.name + "'s turn");
