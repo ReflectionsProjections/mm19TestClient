@@ -1,4 +1,4 @@
-package mm19.server;
+package mm19.api;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -8,6 +8,10 @@ import mm19.game.board.Position;
 import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
+import mm19.server.Server;
+import mm19.server.ServerTimerTask;
+import mm19.server.ShipActionResult;
+import mm19.server.ShipData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +43,7 @@ public class API {
 	private static int ID = 0;
 
     /**
-     * TODO Description goes here
+     * Initialize the API.
      *
      * @return Boolean that always returns true for some reason TODO See if this can be changed to a void function
      */

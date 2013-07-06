@@ -1,5 +1,4 @@
 package mm19.tests;
-import mm19.TestUtilities;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;

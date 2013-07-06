@@ -2,7 +2,7 @@ package mm19.tests;
 
 import java.util.ArrayList;
 
-import mm19.TestUtilities;
+import mm19.api.API;
 import mm19.game.board.Position;
 import mm19.game.player.Player;
 import mm19.game.ships.DestroyerShip;
@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import mm19.game.Action;
 import mm19.game.Engine;
-import mm19.server.API;
 import mm19.server.ShipData;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;

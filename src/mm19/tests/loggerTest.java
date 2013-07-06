@@ -3,7 +3,7 @@ package mm19.tests;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import mm19.server.GameLogger;
+import mm19.logging.GameLogger;
 
 public class loggerTest {
  public static void main(String[] arrgs){

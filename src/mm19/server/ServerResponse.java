@@ -4,7 +4,7 @@ import java.util.List;
 
 import mm19.game.HitReport;
 /*
- * This ServerResponse class is a java representation  of the JSON the server will 
+ * This ServerResponse class is a java representation of the JSON the server will 
  * send Upon a successful, or partially successful submission.
  */
 public class ServerResponse {

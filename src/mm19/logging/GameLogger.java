@@ -1,4 +1,4 @@
-package mm19.server;
+package mm19.logging;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

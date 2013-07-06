@@ -3,6 +3,7 @@ package mm19.game;
 import java.util.ArrayList;
 import java.util.Timer;
 
+import mm19.api.API;
 import mm19.exceptions.EngineException;
 import mm19.exceptions.InputException;
 import mm19.exceptions.ResourceException;
@@ -13,7 +14,6 @@ import mm19.game.ships.DestroyerShip;
 import mm19.game.ships.MainShip;
 import mm19.game.ships.PilotShip;
 import mm19.game.ships.Ship;
-import mm19.server.API;
 import mm19.server.ShipActionResult;
 import mm19.server.ShipData;
 
@@ -110,7 +110,6 @@ public class Engine{
      * @return returns the player that has been chosen as victor
      */
     public static Player breakTie(Player p1, Player p2){
-        //TODO Move to engine class
     	int p1Health = 0;
     	int p2Health = 0;
     	Board board = p1.getBoard();
@@ -194,6 +193,7 @@ public class Engine{
 			return -1;
 		}
 		
+		// Note: playerIDs are just incremented starting at 0, use this to our advantage
 		Player player=new Player(Constants.STARTING_RESOURCES);
 		
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
@@ -202,19 +202,17 @@ public class Engine{
 			API.writePlayerError(turn % 2, "Unable to setup ships due to bad positions");
 			API.writePlayerResponseCode(turn%2);
 			return -1;
-			}
-		if(players[0] == null) {
-			players[0] = player;
 		}
-		else if (players[1] == null) {
-			players[1] = player;
-		}
-		else throw new RuntimeException("too many players!");
 		
+		
+		if(player.getPlayerID() >= Constants.PLAYER_COUNT || players[player.getPlayerID()] != null) {
+			throw new RuntimeException("too many players!");
+		}
+		
+		players[player.getPlayerID()] = player;
 		playerTokens[player.getPlayerID()] = playerToken;
 		
 		ArrayList<ShipData> data = getShipData(player);
-		
 		
 		API.writePlayerShips(player.getPlayerID(), data);
 		API.writePlayerResources(player.getPlayerID(), player.getResources());
@@ -225,6 +223,7 @@ public class Engine{
 			time = new Timer();
 			time.schedule(new Timeout(this), TIME_LIMIT *1000);
 		}
+		
 		return player.getPlayerID();
 	}
 	
@@ -239,28 +238,20 @@ public class Engine{
 		time.purge();
 		
 		//Check for valid playerID
-        //TODO Generalize player
-		int playerID;
-		if(playerTokens[0].equals(playerToken)) {
-			playerID = 0;
-		} else {
-			playerID = 1;
+		int playerID = getPlayerIDByToken(playerToken);
+		
+		if(playerID == -1) {
+			throw new RuntimeException("Unregonized player token during playerTurn");
 		}
-		if(playerID != turn % 2 ){
+		
+		if(playerID != turn % Constants.PLAYER_COUNT){
 			API.writePlayerError(playerID, "It is not your turn!");
 			API.writePlayerResponseCode(playerID);
 			return false;
 		}
-		Player player = null;
-		Player otherPlayer = null;
-		if(players[0].getPlayerID() == playerID){
-			player = players[0];
-			otherPlayer = players[1];
-		}
-		else if(players[1].getPlayerID() == playerID){
-			player = players[1];
-			otherPlayer = players[0];
-		}
+		
+		Player player = players[playerID];
+		Player opponent = players[getOpponentID(playerID)];
 		
 		Ability.gatherResources(player);
 		
@@ -272,7 +263,7 @@ public class Engine{
 		for(Action action: actions){
 			if(action.actionID == Action.Type.SHOOT) {
 				try{
-					HitReport hitResponse = Ability.shoot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+					HitReport hitResponse = Ability.shoot(player, opponent, action.shipID, action.actionXVar, action.actionYVar);
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					hits.add(hitResponse);
 					opponentHits.add(hitResponse);
@@ -282,7 +273,7 @@ public class Engine{
 			} else if (action.actionID == Action.Type.BURST_SHOT) {
 				try{
 					ArrayList<HitReport> burstResponse = 
-			        Ability.burstShot(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+			        Ability.burstShot(player, opponent, action.shipID, action.actionXVar, action.actionYVar);
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					for(HitReport hitReport : burstResponse){
 						if(hitReport.shotSuccessful){
@@ -294,7 +285,7 @@ public class Engine{
                 }
 			} else if (action.actionID == Action.Type.SONAR) {
 				try{
-					ArrayList<SonarReport> sonarResponse = Ability.sonar(player, otherPlayer, action.shipID, action.actionXVar, action.actionYVar);
+					ArrayList<SonarReport> sonarResponse = Ability.sonar(player, opponent, action.shipID, action.actionXVar, action.actionYVar);
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 					pings.addAll(sonarResponse);
 				} catch(EngineException e){
@@ -309,8 +300,7 @@ public class Engine{
                 }
 
 				try{
-                    //TODO: Ask why move success (moveResponse) is not relayed to player.
-					boolean moveResponse = Ability.move(player, action.shipID, new Position(action.actionXVar, action.actionYVar, orientation));
+					Ability.move(player, action.shipID, new Position(action.actionXVar, action.actionYVar, orientation));
 					turnResults.add(new ShipActionResult(action.shipID, SUCCESS_IDENTIFIER));
 				} catch(EngineException e){
                     handleEngineException(e, playerID, action, turnResults);
@@ -329,7 +319,7 @@ public class Engine{
 	public void timeout(){
 		System.out.println("timeout!");
 		int currPlayerID = turn % Constants.PLAYER_COUNT;
-		int opponentID = getOpponentID(currPlayerID);
+		//int opponentID = getOpponentID(currPlayerID);
 		Player player = players[currPlayerID];
 
         //TODO Create local variables and pass them into endOfTurn
@@ -348,8 +338,8 @@ public class Engine{
 	 * @param sonar
 	 */
 	public void endOfTurn(Player player, ArrayList<ShipActionResult> results, ArrayList<HitReport> hits, ArrayList<HitReport> opponentHits, ArrayList<SonarReport> sonar){
-        //TODO: generalize...
 		if(!players[0].isAlive() && !players[1].isAlive()){
+			// Players did at the same time?
 			API.hasWon(breakTie(players[0], players[1]).getPlayerID());
 		} else if(!players[0].isAlive()){
 			//Player 2 wins
@@ -422,10 +412,9 @@ public class Engine{
 		}
 	}
 	
-	private ArrayList<ShipData> getShipData(Player p) {
-		//TODO Use a better name than 'p'
+	private ArrayList<ShipData> getShipData(Player player) {
 		ArrayList<ShipData> data = new ArrayList<ShipData>();
-		ArrayList<Ship> ships = p.getBoard().getShips();
+		ArrayList<Ship> ships = player.getBoard().getShips();
 		Ship tempShip;
 		Position tempPos;
 		String tempType;
@@ -435,29 +424,13 @@ public class Engine{
 			tempShip = ships.get(i);
 			tempType = tempShip.getIdentifier();
 
-
-			
 			if(tempType != null){
-                Position.Orientation tempOrient = p.getBoard().getShipPosition(tempShip.getID()).orientation;
-				tempPos=p.getBoard().getShipPosition(tempShip.getID());
+                Position.Orientation tempOrient = player.getBoard().getShipPosition(tempShip.getID()).orientation;
+				tempPos=player.getBoard().getShipPosition(tempShip.getID());
 				data.add(new ShipData(tempShip.getHealth(), tempShip.getID(), tempType, tempPos.x, tempPos.y, tempOrient));
 			}
 		}
 		
 		return data;
 	}
-
-    //TODO If we aren't going to use these were should remove them
-	public int getP1ID() {
-		if(players[0] != null) return players[0].getPlayerID();
-		return -1;
-	}
-
-	public int getP2ID() {
-		if(players[1] != null) return players[1].getPlayerID();
-		return -1;
-	}
-
-
-
 }

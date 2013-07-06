@@ -6,11 +6,7 @@ package mm19.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 
@@ -43,7 +39,7 @@ public class RequestRunnable implements Runnable {
 				String msg = in.readLine();
 				System.out.println("Recieved turn");
 				JSONObject obj = new JSONObject(msg);
-				Server.sendAPI(obj);
+				Server.sendToAPI(obj);
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -68,24 +64,6 @@ public class RequestRunnable implements Runnable {
 			}
 		}
 			
-	}
-/*	
-	private boolean send(String data) {
-		boolean successful = true;
-		try {
-			out.write(data.getBytes());
-			out.flush();
-		} catch (IOException e) {
-			Server.serverLog.log(Level.WARNING, "Error sending message:\n" + data);
-			successful = false;
-			e.printStackTrace();
-		}
-		return successful;
-		
-	}
-*/
-	private JSONObject receive() {
-		return null;
 	}
 	
 }

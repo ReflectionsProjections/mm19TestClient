@@ -15,7 +15,10 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mm19.api.API;
 import mm19.game.Constants;
+import mm19.logging.GameLogger;
+
 import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.json.JSONArray;
@@ -81,7 +84,6 @@ public class Server {
 		 
 	}
 
-	@SuppressWarnings("unused")
 	private static boolean initServer() {
 
 		clientSockets = new Socket[Constants.PLAYER_COUNT];
@@ -330,7 +332,7 @@ public class Server {
 		System.exit(player);
 	}
 
-	public static synchronized void sendAPI(JSONObject obj) {
+	public static synchronized void sendToAPI(JSONObject obj) {
 		API.decodeTurn(obj);
 	}
 
