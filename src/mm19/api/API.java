@@ -16,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 
  * @author mm19
  * 
  *         This will tie together the server and game logic. Functions defined
@@ -247,5 +246,12 @@ public class API {
 	 */
 	public boolean getStarted() {
 		return game.getStarted();
+	}
+	
+	/**
+	 * Gets whether the game has a winner
+	 */
+	public boolean getWinner() {
+		return game.getWinner();
 	}
 }

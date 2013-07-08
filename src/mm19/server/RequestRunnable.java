@@ -1,6 +1,8 @@
 package mm19.server;
 
 /**
+ * @author mm19
+ * 
  * Thread runner for individual client requests.
  */
 
@@ -32,7 +34,6 @@ public class RequestRunnable implements Runnable {
 	public void run() {
 		
 		while(true) {
-			
 			try {
 				in = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
 				

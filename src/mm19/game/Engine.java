@@ -35,6 +35,7 @@ public class Engine {
 	private Player[] players;
 	private int turn = 0;
 	private boolean started = false;
+	private boolean winner = false;
 
 	/**
 	 * Constructor
@@ -300,6 +301,8 @@ public class Engine {
 		if (!opponent.isAlive()) {
 			playerTurn.setWon();
 			opponentPlayerTurn.setLost();
+			
+			winner = true;
 		}
 
 		if (turn > TURN_LIMIT) {
@@ -309,6 +312,8 @@ public class Engine {
 
 			playerTurn.setWon();
 			opponentPlayerTurn.setLost();
+			
+			winner = true;
 		}
 
 		opponentPlayerTurn.setNotify();
@@ -324,6 +329,14 @@ public class Engine {
 	 */
 	public boolean getStarted() {
 		return started;
+	}
+	
+	/**
+	 * Get if the game has a winner.
+	 * @return if the game has a winner
+	 */
+	public boolean getWinner() {
+		return winner;
 	}
 
 	/**

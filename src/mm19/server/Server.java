@@ -1,7 +1,11 @@
 package mm19.server;
 
 /**
+ * @author mm19
+ * 
  * MechMania XIX server.
+ * 
+ * TODO Needs more javadoc
  */
 
 import java.io.BufferedReader;
@@ -20,7 +24,7 @@ import mm19.api.API;
 import mm19.api.PlayerTurn;
 import mm19.exceptions.APIException;
 import mm19.game.Constants;
-import mm19.logging.GameLogger;
+import mm19.logging.VisualizerLogger;
 
 import org.jasypt.salt.RandomSaltGenerator;
 import org.jasypt.util.text.BasicTextEncryptor;
@@ -44,7 +48,7 @@ public class Server {
 	private static boolean[] connected;
 	private static int playersConnected;
 
-	private static GameLogger visualizerLog = null;
+	private static VisualizerLogger visualizerLog = null;
 	private static String visualizerLogURL = "log.out";
 
 	// Sockets
@@ -67,6 +71,11 @@ public class Server {
 	public static final int TURN_TIME_LIMIT = 10000;
 	private static Timer interruptTimer;
 
+	/**
+	 * Starting point for the game.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
 		// Set up the server, including logging and socket to listen on
@@ -78,7 +87,7 @@ public class Server {
 			System.exit(1);
 		}
 
-		visualizerLog = new GameLogger(Server.visualizerLogURL);
+		visualizerLog = new VisualizerLogger(Server.visualizerLogURL);
 
 		// Run the server until the game ends
 		run();
@@ -87,6 +96,11 @@ public class Server {
 
 	}
 
+	/**
+	 * Initialize the server
+	 * 
+	 * @return if the server was properly initialized
+	 */
 	private static boolean initServer() {
 
 		interruptTimer = new Timer();
@@ -124,6 +138,12 @@ public class Server {
 		return true;
 	}
 
+	/**
+	 * Run the server, accept incoming clients and spawn worker threads to
+	 * accept further requests from them.
+	 * 
+	 * Starts the game once enough clients have joined.
+	 */
 	private static void run() {
 		int currPlayerID = -1;
 		serverLog.log(Level.INFO, "Starting server run loop");
@@ -199,6 +219,11 @@ public class Server {
 
 	}
 
+	/**
+	 * Get valid playerID for the connecting client
+	 * 
+	 * @return A valid player ID, -1 if no more players can join.
+	 */
 	private static int getValidPlayerID() {
 		if (!connected[0])
 			return 0;
@@ -208,8 +233,13 @@ public class Server {
 		return -1;
 	}
 
-	// Returns 0 if player 1 is authenticated, returns 1 if player 2 is
-	// authenticated, returns -1 if neither.
+	/**
+	 * Authenticates a player by returning the player ID associated with it
+	 * 
+	 * @param token
+	 *            The token to be authenticated
+	 * @return The player ID, -1 if authentication failed
+	 */
 	private static int authenticate(String token) {
 		if (connected[0]) {
 			if (bte.decrypt(token).equals(playerToken[0])) {
@@ -224,6 +254,9 @@ public class Server {
 		return -1;
 	}
 
+	/**
+	 * Starts the game once enough players have connected
+	 */
 	private static void startGame() {
 		PlayerTurn turn = api.getPlayerTurn(0);
 		turn.setNotify();
@@ -234,10 +267,26 @@ public class Server {
 		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
+	/**
+	 * Encrypts the string, used for encrypting tokens
+	 * 
+	 * @param s
+	 *            The string to be encrypted
+	 * @return The encrypted string
+	 */
 	private static String encrypt(String s) {
 		return bte.encrypt(s);
 	}
 
+	/**
+	 * Send a JSON object to a client, which is determined by authenticating the
+	 * token
+	 * 
+	 * @param json
+	 *            The JSON object to be sent
+	 * @param token
+	 *            The token to be authenticated
+	 */
 	public static synchronized void sendToPlayer(JSONObject json, String token) {
 		// Authenticate the player.
 		int playerID = authenticate(token);
@@ -262,6 +311,15 @@ public class Server {
 		}
 	}
 
+	/**
+	 * Called from RequestRunnable when a client submits a turn, sends to the
+	 * API for further handling and reacts accordingly.
+	 * 
+	 * @param obj
+	 *            The turn to submit
+	 * @param token
+	 *            The token to authenticate
+	 */
 	public static synchronized void submitTurn(JSONObject obj, String token) {
 		int playerID = authenticate(token);
 		if (playerID == -1) {
@@ -293,17 +351,32 @@ public class Server {
 		PlayerTurn playerTurn = api.getPlayerTurn(playerID);
 		PlayerTurn opponentTurn = api.getPlayerTurn(opponentID);
 
+		// Adding turn to visualizer log
+		visualizerLog.addTurn(playerTurn.toJSON());
+
 		sendToPlayer(playerTurn.toJSON(), playerToken[playerID]);
 		sendToPlayer(opponentTurn.toJSON(), playerToken[opponentID]);
 
 		playerTurn.resetTurn();
 		opponentTurn.resetTurn();
 
+		if (api.getWinner()) {
+			shutdown();
+			return;
+		}
 		// Set the new player to interrupt.
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
 		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
+	/**
+	 * Sends information (a turn) to the API for processing
+	 * 
+	 * @param obj
+	 *            The turn to be processed
+	 * @param playerID
+	 *            The player ID of the turn
+	 */
 	private static void sendToAPI(JSONObject obj, int playerID) {
 		try {
 			api.processTurn(obj, playerID);
@@ -312,6 +385,13 @@ public class Server {
 		}
 	}
 
+	/**
+	 * Called from a ServerInterruptTask when the timer goes off, interrupts a
+	 * current player and sends him a message for taking too long.
+	 * 
+	 * @param playerID
+	 * 				The player to interrupt
+	 */
 	public static synchronized void interruptPlayer(int playerID) {
 		int opponentID = api.getCurrOpponentID();
 
@@ -332,7 +412,28 @@ public class Server {
 		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
-	public static void printToVisualizerLog(String string) {
-		visualizerLog.log(string);
+	/**
+	 * Shuts down the server and writes the game to the log file
+	 */
+	private static void shutdown() {
+		visualizerLog.writeToFile();
+		visualizerLog.close();
+
+		starting = false;
+
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Adds a turn to the visualizer log
+	 * @param turn
+	 * 			The turn to add
+	 */
+	public static void addTurnToVisualizerLog(JSONObject turn) {
+		visualizerLog.addTurn(turn);
 	}
 }

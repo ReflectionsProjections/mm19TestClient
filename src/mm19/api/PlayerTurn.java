@@ -13,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * @author mm19 
+ * 
  * PlayerTurn is a java representation of the JSON the server will send upon a
  * successful, or partially successful submission. It provides an interface to
  * add other API objects and easily form all types of server responses.

@@ -5,6 +5,11 @@ import mm19.exceptions.ActionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * @author mm19
+ * 
+ * Immutable object for player actions
+ */
 public class Action {
 
 	// Class variables
