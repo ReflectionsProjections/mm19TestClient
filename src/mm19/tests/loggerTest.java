@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import mm19.logging.GameLogger;
 
 public class loggerTest {
- public static void main(String[] arrgs){
+ public static void main(String[] args){
 	 GameLogger logger = new GameLogger("fakeLogFile");
 	 JSONObject json = new JSONObject();
 	 try {

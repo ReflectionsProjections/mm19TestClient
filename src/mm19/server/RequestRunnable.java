@@ -39,7 +39,7 @@ public class RequestRunnable implements Runnable {
 				String msg = in.readLine();
 				System.out.println("Recieved turn");
 				JSONObject obj = new JSONObject(msg);
-				Server.sendToAPI(obj);
+				Server.submitTurn(obj, playerToken);
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -50,15 +50,11 @@ public class RequestRunnable implements Runnable {
 			}
 		}
 			
-			
-		// Close up the client socket
-			
-		Server.serverLog.log(Level.INFO, "Dropping Player");
+		Server.serverLog.log(Level.INFO, "Player dropped, restart server.");
 		
 		if(in != null) {
 			try {
 				in.close();
-				Server.disconnectPlayer(playerToken);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
