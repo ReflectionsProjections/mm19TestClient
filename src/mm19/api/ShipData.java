@@ -20,8 +20,9 @@ public class ShipData {
 	final public int xCoord;
 	final public int yCoord;
 	final public Position.Orientation orientation;
-	
-	public ShipData(int health, int ID, String type,int xCoord, int yCoord,Position.Orientation orientation){
+
+	public ShipData(int health, int ID, String type, int xCoord, int yCoord,
+			Position.Orientation orientation) {
 		this.health = health;
 		this.ID = ID;
 		this.type = type;
@@ -29,22 +30,27 @@ public class ShipData {
 		this.yCoord = yCoord;
 		this.orientation = orientation;
 	}
-	
-	public ShipData(JSONObject json) throws ShipDataException{
+
+	public ShipData(JSONObject json) throws ShipDataException {
 		try {
-			health = json.getInt("health");
-			ID = json.getInt("ID");
+
+			// Health and ID is not necessary for initializing ShipData through
+			// a JSONObject, the Engine logic will have the data within the game
+			health = json.optInt("health");
+			ID = json.optInt("ID");
+
 			type = json.getString("type");
 			xCoord = json.getInt("xCoord");
 			yCoord = json.getInt("yCoord");
 			String orientationIdentifier = json.getString("orientation");
-			orientation = Position.getOrientationByIdentifier(orientationIdentifier); 
+			orientation = Position
+					.getOrientationByIdentifier(orientationIdentifier);
 		} catch (JSONException e) {
 			throw new ShipDataException("ShipDataException: " + e.getMessage());
 		}
 	}
-	
-	public JSONObject toJSON() throws ShipDataException{
+
+	public JSONObject toJSON() throws ShipDataException {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("health", health);
@@ -52,7 +58,8 @@ public class ShipData {
 			json.put("type", type);
 			json.put("xCoord", xCoord);
 			json.put("yCoord", yCoord);
-			json.put("orientation", Position.getIdentifierByOrientation(orientation));
+			json.put("orientation",
+					Position.getIdentifierByOrientation(orientation));
 		} catch (JSONException e) {
 			// This should never happen.
 			throw new ShipDataException("ShipDataException: " + e.getMessage());

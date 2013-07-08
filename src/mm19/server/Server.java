@@ -105,7 +105,7 @@ public class Server {
 
 		interruptTimer = new Timer();
 		clientSockets = new Socket[Constants.PLAYER_COUNT];
-
+		api = API.getAPI();
 		playerToken = new String[Constants.PLAYER_COUNT];
 		for (int i = 0; i < playerToken.length; i++) {
 			playerToken[i] = "";
@@ -117,7 +117,7 @@ public class Server {
 		}
 
 		bte = new BasicTextEncryptor();
-		bte.setPassword(new String((new RandomSaltGenerator().generateSalt(10))));
+		bte.setPassword("mm19");
 
 		// TODO: Set up logging to a file
 		serverLog.setLevel(LOG_LEVEL);
@@ -178,8 +178,9 @@ public class Server {
 
 				serverLog.log(Level.INFO, "Received player info");
 
-				String token = new String(
-						(new RandomSaltGenerator().generateSalt(20)));
+				// We can think of something more interesting here, but security
+				// isn't the biggest issue at the moment.
+				String token = "player" + playersConnected;
 
 				try {
 					api.addPlayer(s, encrypt(token));
@@ -194,7 +195,7 @@ public class Server {
 							+ ++playersConnected);
 
 					RequestRunnable task = new RequestRunnable(clientSocket,
-							playerToken[currPlayerID], currPlayerID);
+							encrypt(playerToken[currPlayerID]), currPlayerID);
 					threadPool.execute(task);
 
 					if (api.getStarted()) {
@@ -260,7 +261,7 @@ public class Server {
 	private static void startGame() {
 		PlayerTurn turn = api.getPlayerTurn(0);
 		turn.setNotify();
-		sendToPlayer(turn.toJSON(), playerToken[0]);
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[0]));
 		turn.resetTurn();
 
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
@@ -340,6 +341,7 @@ public class Server {
 
 		interruptTimer.cancel();
 		interruptTimer.purge();
+		interruptTimer = new Timer();
 
 		int opponentID = api.getCurrOpponentID();
 
@@ -354,8 +356,8 @@ public class Server {
 		// Adding turn to visualizer log
 		visualizerLog.addTurn(playerTurn.toJSON());
 
-		sendToPlayer(playerTurn.toJSON(), playerToken[playerID]);
-		sendToPlayer(opponentTurn.toJSON(), playerToken[opponentID]);
+		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
+		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
 
 		playerTurn.resetTurn();
 		opponentTurn.resetTurn();
@@ -390,7 +392,7 @@ public class Server {
 	 * current player and sends him a message for taking too long.
 	 * 
 	 * @param playerID
-	 * 				The player to interrupt
+	 *            The player to interrupt
 	 */
 	public static synchronized void interruptPlayer(int playerID) {
 		int opponentID = api.getCurrOpponentID();
@@ -400,12 +402,12 @@ public class Server {
 
 		PlayerTurn turn = api.getPlayerTurn(playerID);
 		turn.setInterrupt();
-		sendToPlayer(turn.toJSON(), playerToken[playerID]);
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[playerID]));
 		turn.resetTurn();
 
 		turn = api.getPlayerTurn(opponentID);
 		turn.setNotify();
-		sendToPlayer(turn.toJSON(), playerToken[opponentID]);
+		sendToPlayer(turn.toJSON(), encrypt(playerToken[opponentID]));
 		turn.resetTurn();
 
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = api.getCurrPlayerID();
@@ -430,8 +432,9 @@ public class Server {
 
 	/**
 	 * Adds a turn to the visualizer log
+	 * 
 	 * @param turn
-	 * 			The turn to add
+	 *            The turn to add
 	 */
 	public static void addTurnToVisualizerLog(JSONObject turn) {
 		visualizerLog.addTurn(turn);

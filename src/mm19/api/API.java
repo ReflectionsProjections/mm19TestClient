@@ -25,7 +25,7 @@ import org.json.JSONObject;
 public class API {
 	private PlayerTurn[] playerTurns;
 	private Engine game;
-
+	private static boolean initialized = false;
 	private static API m_API = null;
 
 	/**
@@ -43,7 +43,11 @@ public class API {
 	 */
 	public static API getAPI() {
 		if (m_API == null) {
-			m_API = new API();
+			if(!initialized) {
+				initialized = true;
+				m_API = new API();
+			}
+			
 		}
 
 		return m_API;
@@ -59,7 +63,6 @@ public class API {
 	 *            The playerToken for identifying the player in future turns
 	 */
 	public void addPlayer(String s, String playerToken) throws APIException {
-
 		try {
 			JSONObject json = new JSONObject(s);
 			ShipData mainShip = null;
@@ -76,7 +79,7 @@ public class API {
 			// Get the array of other ships from JSON and verify it's the right
 			// length.
 			JSONArray shipsJSONArray = json.getJSONArray("ships");
-			if (shipsJSONArray.length() == Constants.MAX_SHIPS - 1) {
+			if (shipsJSONArray.length() != Constants.MAX_SHIPS - 1) {
 				throw new APIException("You are trying to place "
 						+ (shipsJSONArray.length() + 1)
 						+ " ships but the game requires " + Constants.MAX_SHIPS);
@@ -102,6 +105,7 @@ public class API {
 			Player player;
 			try {
 				player = game.setPlayer(shipDatas, playerToken);
+				player.setName(json.getString("playerName"));
 			} catch (EngineException e) {
 				throw new APIException(e.getMessage());
 			}

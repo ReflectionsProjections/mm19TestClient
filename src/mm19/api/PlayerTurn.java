@@ -223,14 +223,14 @@ public class PlayerTurn {
 			// Determine the right JSON to respond with
 			if (!initialized) {
 				json = getUninitializedJSON();
-			} else if (interrupt) {
-				json = getInterruptJSON();
-			} else if (notify) {
-				json = getNotifyJSON();
 			} else if (won) {
 				json = getWinJSON();
 			} else if (lost) {
 				json = getLossJSON();
+			} else if (interrupt) {
+				json = getInterruptJSON();
+			} else if (notify) {
+				json = getNotifyJSON();
 			} else {
 				json = getResponseJSON();
 			}

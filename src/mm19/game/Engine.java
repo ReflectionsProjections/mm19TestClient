@@ -29,8 +29,6 @@ import mm19.game.ships.Ship;
 
 public class Engine {
 	public static final int TURN_LIMIT = 10000;
-	
-
 	private API api;
 	private Player[] players;
 	private int turn = 0;
@@ -41,13 +39,16 @@ public class Engine {
 	 * Constructor
 	 */
 	public Engine() {
-		api = API.getAPI();
 		players = new Player[Constants.PLAYER_COUNT];
 		for (int i = 0; i < Constants.PLAYER_COUNT; i++) {
 			players[i] = null;
 		}
 
 		turn = 0;
+	}
+	
+	public void setAPI(API api) {
+		this.api = api;
 	}
 
 	/**
@@ -105,6 +106,10 @@ public class Engine {
 	 */
 	private void handleEngineException(EngineException e, int playerID,
 			Action action) {
+		if(api == null) {
+			setAPI(API.getAPI());
+		}
+		
 		if (e instanceof InputException) {
 			api.getPlayerTurn(playerID)
 					.addShipActionResult(
@@ -134,6 +139,10 @@ public class Engine {
 	public Player setPlayer(ArrayList<ShipData> shipDatas, String playerToken)
 			throws EngineException {
 
+		if(api == null) {
+			setAPI(API.getAPI());
+		}
+		
 		if (started) {
 			throw new EngineException(
 					"The game has already started, can't add new player!");
@@ -178,7 +187,6 @@ public class Engine {
 		// Note: playerIDs are just incremented starting at 0, use this to our
 		// advantage
 		Player player = new Player(Constants.STARTING_RESOURCES);
-
 		boolean setupShips = Ability.setupBoard(player, ships, positions);
 
 		if (!setupShips) {
@@ -208,6 +216,10 @@ public class Engine {
 	 */
 	public boolean playerTurn(int playerID, ArrayList<Action> actions) {
 
+		if(api == null) {
+			setAPI(API.getAPI());
+		}
+		
 		// Check for valid playerID
 		// This, at the moment, is a redundant check (it is checked at the
 		// Server level), we may want to keep it here as well or not.
