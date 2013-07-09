@@ -105,7 +105,7 @@ public class TestClientDummy extends TestClient {
 	@Override
 	public JSONObject prepareTurn(ServerResponse sr) {
 		JSONObject turnObj = new JSONObject();
-		
+		ships = sr.ships;
 		try {
 			
 			ShipAction tempAction;
