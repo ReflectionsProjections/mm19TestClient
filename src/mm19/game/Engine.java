@@ -315,19 +315,16 @@ public class Engine {
 			opponentPlayerTurn.setLost();
 			
 			Server.serverLog.log(Level.INFO, "Player " + playerTurn.getPlayer().getName() + " has won! (Opponent killed)");
-			// Do we need a "has lost" log here? Delete this comment if we don't - Ace
 			winner = true;
 		}
-		else if (turn > TURN_LIMIT) { // I changed this to an else for now so both player's can't be defeated. Feel free to tweak in the future. - Ace
+		else if (turn > TURN_LIMIT) { // I changed this to an else for now so both players can't be defeated. Feel free to tweak in the future. - Ace
 			player = breakTie(player, opponent);
 			opponent = players[(player.getPlayerID() + 1)
-					% Constants.PLAYER_COUNT];
+					% Constants.PLAYER_COUNT]; // What does this bit of logic do? (Is this server supposed to run multiple 2-player games simultaneously? Otherwise, this makes no sense to me.) - Ace
 
 			playerTurn.setWon();
 			Server.serverLog.log(Level.INFO, "Player " + playerTurn.getPlayer().getName() + " has won! (Won a tie breaker)");
 			opponentPlayerTurn.setLost();
-			// Do we need a "has lost" log here? Delete this comment if we don't - Ace
-			
 			winner = true;
 		}
 
