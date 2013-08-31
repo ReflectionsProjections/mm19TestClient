@@ -3,15 +3,14 @@ package mm19.testclient.dummy;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import mm19.objects.HitReport;
 import mm19.objects.Ship;
 import mm19.objects.ShipAction;
-import mm19.objects.ShipAction.Action;
 import mm19.response.ServerResponse;
 import mm19.testclient.TestClient;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class TestClientDummy extends TestClient {
 
@@ -106,7 +105,7 @@ public class TestClientDummy extends TestClient {
 	@Override
 	public JSONObject prepareTurn(ServerResponse sr) {
 		JSONObject turnObj = new JSONObject();
-		
+		ships = sr.ships;
 		try {
 			
 			ShipAction tempAction;
