@@ -143,9 +143,9 @@ public class Board {
         int y = position.y;
         for (int i = 0; i < ship.getLength(); i++) {
             if (position.orientation == Position.Orientation.VERTICAL) {
-                y = position.y - i;
+                y = position.y + i;
             } else {
-                x = position.x - i;
+                x = position.x + i;
             }
             tiles[x][y].setShip(ship);
         }
@@ -171,9 +171,9 @@ public class Board {
 
         for (int i = 0; i < ship.getLength(); i++) {
             if (orientation == Position.Orientation.VERTICAL) {
-                y = shipY - i;
+                y = shipY + i;
             } else {
-                x = shipX - i;
+                x = shipX + i;
             }
             tiles[x][y].removeShip();
         }
@@ -255,9 +255,9 @@ public class Board {
         int y = position.y;
         for (int i = 0; i < ship.getLength(); i++) {
             if (position.orientation == Position.Orientation.VERTICAL) {
-                y = position.y - i;
+                y = position.y + i;
             } else {
-                x = position.x - i;
+                x = position.x + i;
             }
             if (!inBounds(x, y) || isOccupied(x, y)) {
                 return false;
@@ -346,7 +346,7 @@ public class Board {
     /**
      * @author mm19
      *
-     * Private class for storage of data relevent to a ship on a board
+     * Private class for storage of data relevant to a ship on a board
      */
     private class ShipData {
         private Ship ship;
