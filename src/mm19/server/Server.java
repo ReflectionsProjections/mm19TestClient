@@ -88,15 +88,18 @@ public class Server {
 			System.exit(1);
 		}
 
-		visualizerLog = new VisualizerLogger(Server.visualizerLogURL);
+
+        if(args.length < 1) {
+            visualizerLog = new VisualizerLogger(Server.visualizerLogURL);
+        }
+        else {
+            visualizerLog = new VisualizerLogger(args[0]);
+        }
 
 		// Run the server until the game ends
 		run();
 
 		// End the server and clean up
-		
-		//TODO: clean up server
-		System.exit(1);
 
 	}
 
@@ -225,6 +228,7 @@ public class Server {
 
 					if (api.getStarted()) {
 						startGame();
+						starting = false;
 					}
 
 				} catch (APIException e) {
@@ -240,7 +244,6 @@ public class Server {
 			} catch (IOException e) {
 				serverLog.log(Level.SEVERE, "Unexpected error accepting "
 						+ "client connection.", e);
-				//TODO: determine which player closed connection and have the other player win
 				starting = false;
 			}
 		}
@@ -455,6 +458,8 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		threadPool.shutdown();
+		interruptTimer.cancel();
 	}
 
 	/**
