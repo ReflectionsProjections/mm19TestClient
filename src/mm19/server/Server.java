@@ -94,6 +94,9 @@ public class Server {
 		run();
 
 		// End the server and clean up
+		
+		//TODO: clean up server
+		System.exit(1);
 
 	}
 
@@ -237,6 +240,8 @@ public class Server {
 			} catch (IOException e) {
 				serverLog.log(Level.SEVERE, "Unexpected error accepting "
 						+ "client connection.", e);
+				//TODO: determine which player closed connection and have the other player win
+				starting = false;
 			}
 		}
 
