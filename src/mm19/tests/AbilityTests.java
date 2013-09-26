@@ -211,7 +211,7 @@ public class AbilityTests {
 
         //Test not enough resources
         player.takeResources(Constants.STARTING_RESOURCES);
-        player.giveResources(Ability.MOVE_COST_PER_UNIT_LENGTH * playerShip.getLength() - 1);
+        player.giveResources(playerShip.getMoveCost() - 1);
 
         try {
             Ability.move(player, playerShip.getID(), new Position(0, height-1, Position.Orientation.HORIZONTAL));
@@ -235,7 +235,7 @@ public class AbilityTests {
         assertTrue("Player special ability should now be used.", player.hasUsedSpecial());
 
         //Test player and ship ability used up already
-        player.giveResources(Ability.MOVE_COST_PER_UNIT_LENGTH * playerShip.getLength() - 1);
+        player.giveResources(playerShip.getMoveCost());
         player.getBoard().moveShip(playerShip.getID(), shipOriginalPosition);
 
         try {
@@ -265,6 +265,6 @@ public class AbilityTests {
         }
         assertFalse("Ship somehow moved to an invalid position.", moveSuccessful);
         assertEquals("Player's resources were not refunded for invalid move.",
-                shipOriginalPosition, player.getBoard().getShipPosition(playerShip.getID()));
+                player.getResources(), playerShip.getMoveCost());
     }
 }
