@@ -4,8 +4,6 @@ package mm19.server;
  * @author mm19
  * 
  * MechMania XIX server.
- * 
- * TODO Needs more javadoc
  */
 
 import java.io.BufferedReader;
@@ -69,7 +67,7 @@ public class Server {
 	private static BasicTextEncryptor bte;
 
 	// Interrupts
-	public static final int TURN_TIME_LIMIT = 10000;
+	public static final int TURN_TIME_LIMIT = 1000000;
 	private static Timer interruptTimer;
 
 	/**
@@ -162,7 +160,6 @@ public class Server {
 
 		// Set up the thread pool
 		threadPool = Executors.newFixedThreadPool(MAX_THREADS);
-
 		return true;
 	}
 
@@ -295,7 +292,7 @@ public class Server {
 		turn.resetTurn();
 
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
-		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+		//interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
 	/**
