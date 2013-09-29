@@ -207,6 +207,21 @@ public class PlayerTurn {
 		lost = true;
 	}
 	
+	/**
+     * checks whether the given player has won: 
+     *  if it returns false that does not mean the player has lost, it just means they have not lost yet
+     */
+	public boolean hasWon(){
+	    return won;
+	}
+	
+	/**
+     * checks whether the given player has lost: 
+     *  if it returns false that does not mean the player has won, it just means they have not won yet
+     */
+	public boolean hasLost(){
+	    return lost;
+	}
 
 	/**
 	 * Get the PlayerTurn in a format that the visualizer can read it
