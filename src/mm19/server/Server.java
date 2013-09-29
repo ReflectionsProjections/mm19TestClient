@@ -71,6 +71,9 @@ public class Server {
 	// Interrupts
 	public static final int TURN_TIME_LIMIT = 10000;
 	private static Timer interruptTimer;
+	
+	// winnerString
+	private static JSONObject winJSON;
 
 	/**
 	 * Starting point for the game.
@@ -81,6 +84,7 @@ public class Server {
 	    
 		// Set up the server, including logging and socket to listen on
 		boolean success = initServer();
+		winJSON = null;
 
 		if (!success) {
 			serverLog.log(Level.SEVERE,
@@ -385,6 +389,10 @@ public class Server {
 
 		// Adding turn to visualizer log
 		visualizerLog.addTurn(playerTurn.toJSON());//toLoggingJSON());//
+		if(playerTurn.hasWon() || playerTurn.hasLost()){
+            if(playerTurn.hasWon()) winJSON = playerTurn.winnerJSON();
+            else winJSON = opponentTurn.winnerJSON();
+        }
 
 		sendToPlayer(playerTurn.toJSON(), encrypt(playerToken[playerID]));
 		sendToPlayer(opponentTurn.toJSON(), encrypt(playerToken[opponentID]));
@@ -448,7 +456,8 @@ public class Server {
 	 * Shuts down the server and writes the game to the log file
 	 */
 	private static void shutdown() {
-		visualizerLog.writeToFile();
+	    visualizerLog.addTurn(winJSON);	    
+	    visualizerLog.writeToFile();
 		visualizerLog.close();
 
 		starting = false;

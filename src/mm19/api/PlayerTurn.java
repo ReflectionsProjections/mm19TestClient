@@ -222,6 +222,20 @@ public class PlayerTurn {
 	public boolean hasLost(){
 	    return lost;
 	}
+	
+	/**
+	 * Returns a Json containing "winner", playerName
+	 * @throws JSONException 
+	 */
+	public JSONObject winnerJSON(){
+        try {
+            JSONObject json = new JSONObject();
+            json.put("winner", player.getName());
+            return json;
+        } catch (JSONException e) {
+            return null;
+        }
+	}
 
 	/**
 	 * Get the PlayerTurn in a format that the visualizer can read it
