@@ -46,7 +46,6 @@ public class Server {
 	// Bookkeeping
 	private static boolean[] connected;
 	private static int playersConnected;
-
 	private static VisualizerLogger visualizerLog = null;
 	private static String visualizerLogURL = "log.out";
 
