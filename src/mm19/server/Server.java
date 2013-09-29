@@ -292,7 +292,9 @@ public class Server {
 		turn.resetTurn();
 
 		ServerInterruptTask.PLAYER_TO_INTERRUPT = 0;
-		//interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
+		
+		// This line schedules the interrupts
+		interruptTimer.schedule(new ServerInterruptTask(), TURN_TIME_LIMIT);
 	}
 
 	/**
