@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import mm19.objects.HitReport;
+import mm19.objects.PingReport;
 import mm19.objects.Ship;
 import mm19.objects.Ship.ShipType;
 import mm19.objects.ShipAction;
@@ -22,15 +23,14 @@ import org.json.JSONObject;
  */
 public class TestClientAlex extends TestClient{
 	
-	private Ship[] ships;
 	int resources;
+	int pingX;
+	int pingY;
+	boolean pingHit;
 	String playerToken;
-	
-	TestClientAlexLogic tcal;
 	
 	public TestClientAlex(String name) {
 		super(name);
-		tcal = new TestClientAlexLogic();
 	}
 	
 	/**
@@ -78,43 +78,20 @@ public class TestClientAlex extends TestClient{
 	}
 	
 	/**
-	 * Setting up my impenetrable defense
-	 */
-	@Override
-	public void processInitialReponse(ServerResponse sr) {
-		resources = sr.resources;
-		ships = sr.ships;
-		playerToken = sr.playerToken;
-	}
-	
-	/**
 	 * Process my response in O(n^2) like a boss.
 	 */
 	@Override
 	public void processResponse(ServerResponse sr) {
+		
 		for(HitReport hr : sr.hitReport) {
 			if(hr.hit) {
 				System.out.println("I hit something...? :)");
 			}
 		}
-		for(int i = 0; i < sr.ships.length; i++) {
-			Ship currResponseShip = sr.ships[i];
-			
-			for(int j = 0; j < ships.length; j++) {
-				Ship currShip = ships[j];
-				
-				// If we're talking about the same boat...
-				if(currShip.ID == currResponseShip.ID) {
-					
-					currShip.health = currResponseShip.health;
-					
-					// You sunk my battleship!
-					if(currShip.health <= 0) {
-						tcal.removeShip(j);
-					}
-					break;
-				}
-			}
+		
+		if(sr.pingReport.length > 0) {
+			pingHit = true;
+			System.out.println("Pinged!");
 		}
 	}
 
@@ -126,15 +103,31 @@ public class TestClientAlex extends TestClient{
 		JSONObject turnObj = new JSONObject();
 		try {
 			Collection<JSONObject> actions = new ArrayList<JSONObject>();
+			boolean pinged = false;
 			
-			for(Ship ship : ships) {
-				if(ship.type == ShipType.Pilot) {
-					actions.add(new ShipAction(ship.ID).toJSONObject());
-				} else {
-					int xCoord = (int) (Math.random()*TestClient.BOARD_WIDTH);
-					int yCoord = (int) (Math.random()*TestClient.BOARD_WIDTH);
-					
-					ShipAction tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.Fire, 0);
+			for(PingReport pr : sr.pingReport) {
+				System.out.println("Ship " + pr.shipID + " got pinged :(");
+			}
+			
+			for(Ship ship : sr.ships) {
+				int xCoord = (int) (Math.random()*10);
+				int yCoord = (int) (Math.random()*10);
+				
+				ShipAction tempAction = null;
+				
+				if(ship.type == ShipType.Pilot && !pinged && !pingHit) {
+					tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.Sonar, 0);
+					pingX = xCoord;
+					pingY = yCoord;
+					pinged = true;
+					//System.out.println("Trying to ping at (" + xCoord + "," + yCoord + ")");
+				} else if(ship.type == ShipType.Destroyer && pingHit) {
+					tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.Fire, 0);
+					pingHit = false;
+					//System.out.println("Sending Burst Shot >:)");
+				}
+				
+				if(tempAction != null) {
 					actions.add(tempAction.toJSONObject());
 				}
 			}
@@ -153,27 +146,7 @@ public class TestClientAlex extends TestClient{
 	 */
 	@Override
 	public void handleInterrupt(ServerResponse sr) {
-		
-	}
-
-	/**
-	 * Misc Logic
-	 * @author Flewp
-	 *
-	 */
-	private class TestClientAlexLogic {
-		
-		public void removeShip(int position) {
-			Ship[] newShips = new Ship[ships.length - 1];
-			for(int i = 0; i < ships.length; i++) {
-				if(i == position) {
-					i++;
-				}
-				newShips[i] = ships[i];
-			}
-			
-			ships = newShips;
-		}
+		System.out.println("wat");
 	}
 	
 }

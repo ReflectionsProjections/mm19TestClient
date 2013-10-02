@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import mm19.response.ServerResponse;
 import mm19.response.ServerResponseException;
 import mm19.testclient.TestClient;
-import mm19.testclient.TestClientException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,11 +18,9 @@ public class Requester extends Thread{
 	private TestClient testClient;
 	private Socket serverSocket;
 	private BufferedReader in;
-	private boolean init;
 	public Requester(TestClient tc, Socket ss) {
 		testClient = tc;
 		serverSocket = ss;
-		init = false;
 	}
 
 	@Override
@@ -40,25 +37,8 @@ public class Requester extends Thread{
 				ServerResponse sr = new ServerResponse(new JSONObject(s));
 				System.out.println(sr.toString());
 				// Call the appropriate method.
-				if(sr.responseCode == 100) {
-					System.out.println(testClient.name + "'s turn");
-					JSONObject obj = testClient.prepareTurn(sr);
-					testClient.respondToServer(obj);
-				}
-				else if(sr.responseCode == 200 || sr.resources == 400) {
-					if(!init) {
-						testClient.processInitialReponse(sr);
-						init = true;
-					} else {
-						testClient.processResponse(sr);
-					}
-				}
-				else if(sr.responseCode == 418) {
-					testClient.handleInterrupt(sr);
-				}
-				else {
-					throw new TestClientException("Unrecognized responseCode " + sr.responseCode);
-				}
+				testClient.synchronizeResponse(sr);
+				
 			}
 			catch(UnknownHostException e) {
 				e.printStackTrace();
@@ -73,9 +53,6 @@ public class Requester extends Thread{
 			} catch (JSONException e) {
 				e.printStackTrace();
 				break;
-			} catch (TestClientException e) {
-				// It's probably best not to break if the server sent you an invalid responseCode,
-				// just silently catch for now.
 			}
 		}
 	}

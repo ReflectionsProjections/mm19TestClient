@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import mm19.objects.HitReport;
+import mm19.objects.PingReport;
 import mm19.objects.Ship;
 import mm19.objects.ShipAction;
 import mm19.response.ServerResponse;
@@ -66,12 +67,6 @@ public class TestClientDummy extends TestClient {
 	}
 
 	@Override
-	public void processInitialReponse(ServerResponse sr) {
-		ships = sr.ships;
-		playerToken = sr.playerToken;
-	}
-
-	@Override
 	public void processResponse(ServerResponse sr) {
 		for(HitReport hr : sr.hitReport) {
 			if(hr.hit) {
@@ -107,6 +102,9 @@ public class TestClientDummy extends TestClient {
 		JSONObject turnObj = new JSONObject();
 		ships = sr.ships;
 		try {
+			for(PingReport pr : sr.pingReport) {
+				System.out.println("Ship " + pr.shipID + " got pinged :(");
+			}
 			
 			ShipAction tempAction;
 			Collection<JSONObject> actions = new ArrayList<JSONObject>();
@@ -140,8 +138,7 @@ public class TestClientDummy extends TestClient {
 
 	@Override
 	public void handleInterrupt(ServerResponse sr) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("wat");
 	}
 
 }
