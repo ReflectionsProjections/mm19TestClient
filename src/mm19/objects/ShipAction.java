@@ -45,7 +45,7 @@ public class ShipAction {
 			} else if(actionID == Action.MoveV) {
 				obj.put("actionID", "MV");
 			} else if(actionID == Action.BurstShot) {
-				obj.put("actionID", "BS");
+				obj.put("actionID", "B");
 			} else if(actionID == Action.Sonar) {
 				obj.put("actionID", "S");
 			} else if(actionID == Action.Nothing) {

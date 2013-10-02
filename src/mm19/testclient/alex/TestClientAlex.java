@@ -122,7 +122,7 @@ public class TestClientAlex extends TestClient{
 					pinged = true;
 					//System.out.println("Trying to ping at (" + xCoord + "," + yCoord + ")");
 				} else if(ship.type == ShipType.Destroyer && pingHit) {
-					tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.Fire, 0);
+					tempAction = new ShipAction(ship.ID, xCoord, yCoord, ShipAction.Action.BurstShot, 0);
 					pingHit = false;
 					//System.out.println("Sending Burst Shot >:)");
 				}
