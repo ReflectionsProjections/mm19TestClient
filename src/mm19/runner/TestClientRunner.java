@@ -5,6 +5,7 @@ import mm19.testclient.TestClientException;
 import mm19.testclient.dummy.TestClientDummy;
 
 public class TestClientRunner {
+
     public static void main(String args[]) {
         String name = "Give_me_a_name!";
         if(args.length >= 1) {
@@ -20,4 +21,5 @@ public class TestClientRunner {
             }
         }
     }
+
 }
