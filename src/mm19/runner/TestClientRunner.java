@@ -2,7 +2,7 @@ package mm19.runner;
 
 import mm19.testclient.TestClient;
 import mm19.testclient.TestClientException;
-import mm19.testclient.dummy.TestClientDummy;
+import mm19.testclient.sam.TestClientSam;
 
 public class TestClientRunner {
 
@@ -10,15 +10,15 @@ public class TestClientRunner {
         String name = "Give_me_a_name!";
         if(args.length >= 1) {
             name = args[0];
-            TestClient tc1 = new TestClientDummy(name);
+        }
+        TestClient tc1 = new TestClientSam(name);
 
-            try {
-                tc1.connect();
+        try {
+            tc1.connect();
 
-            }
-            catch(TestClientException e) {
-                e.printStackTrace();
-            }
+        }
+        catch(TestClientException e) {
+            e.printStackTrace();
         }
     }
 
