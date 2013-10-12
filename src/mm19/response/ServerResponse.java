@@ -43,6 +43,9 @@ public class ServerResponse {
 			if(!obj.has("playerToken")) {
 				throw new ServerResponseException("Server does not have a token object.\n" + obj);
 			}
+			if(!obj.has("resources")) {
+				throw new ServerResponseException("Server does not have a resources object.\n" + obj);
+			}
 			if(!obj.has("playerName")) {
 				throw new ServerResponseException("Server does not have a playerName object.\n" + obj);
 			}
@@ -75,6 +78,9 @@ public class ServerResponse {
 					
 			//Getting playerName
 			playerName = obj.getString("playerName");
+			
+			//Getting resources
+			resources = obj.getInt("resources");
 			
 			//Getting ships
 			JSONArray shipsObj = obj.getJSONArray("ships");
